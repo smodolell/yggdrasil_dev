@@ -1,0 +1,119 @@
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi;
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="SaveSubmit" id="MonedaFormId">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.ClaveMoneda"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Clave Moneda"
+                                  For="@(() => _model.ClaveMoneda)">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="_model.NomMoneda"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Nombre de la Moneda"
+                                  For="@(() => _model.NomMoneda)">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Value="_model.PorDefecto"
+                                 Label="Por Defecto"
+                                 Color="Color.Primary">
+                    </MudCheckBox>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   FullWidth="false"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="MonedaFormId">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   FullWidth="false"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public int MonedaId { get; set; }
+
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    private MonedaEditDto _model = new MonedaEditDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MonedaId != 0)
+        {
+            await InitialData();
+        }
+    }
+
+    private async Task InitialData()
+    {
+        var result = await _catalogosApi.GetMonedaById(MonedaId);
+        if (result.Success)
+        {
+            _model = result.Data!;
+        }
+    }
+
+    private async Task SaveSubmit()
+    {
+        try
+        {
+            if (MonedaId == 0)
+            {
+                var result = await _catalogosApi.CreateMoneda(_model);
+                if (result.Success)
+                {
+                    _snackbarService.Add(result.Message, Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
+                }
+            }
+            else
+            {
+                var result = await _catalogosApi.UpdateMoneda(MonedaId, _model);
+                if (result.Success)
+                {
+                    _snackbarService.Add(result.Message, Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}

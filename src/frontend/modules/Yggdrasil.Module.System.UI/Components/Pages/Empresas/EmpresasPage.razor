@@ -1,0 +1,6 @@
+﻿@attribute [Route(PageRoute.EmpresasPage)]
+@attribute [AccessPoint(AppMenu.MenuSistema, "Empresas")]
+@using Yggdrasil.Module.System.UI.Components.Pages.Empresas.Components
+
+<PageHeader Title="Empresas" Icon="@AppMenu.MenuSistemaIcon"></PageHeader>
+<EmpresaList/>

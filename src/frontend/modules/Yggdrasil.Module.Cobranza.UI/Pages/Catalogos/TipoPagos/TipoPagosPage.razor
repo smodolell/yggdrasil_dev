@@ -1,0 +1,17 @@
+@attribute [Route(PageRoute.TipoPagosPage)]
+@attribute [AccessPoint(AppMenu.MenuCatalogo, "Tipos de Pagos")]
+@using Yggdrasil.Module.Cobranza.UI.Pages.Catalogos.TipoPagos.Componentes
+
+<PageHeader Title="Tipos de Pago" Icon="@AppMenu.MenuCatalogoIcon">
+    <MudBreadcrumbs Items="_items" />
+</PageHeader>
+
+<TipoPagoList />
+
+@code {
+    private List<BreadcrumbItem> _items =
+    [
+        new BreadcrumbItem("Catálogos", href: null, disabled: true),
+        new BreadcrumbItem("Tipos de Pago", href: null, icon: AppMenu.MenuCatalogoIcon, disabled: true)
+    ];
+}

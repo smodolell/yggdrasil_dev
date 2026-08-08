@@ -1,0 +1,144 @@
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="HandleSubmit" style="width:100%;" id="tasaValorForm">
+            <FluentValidator />
+            <MudNumericField @bind-Value="_model.ValorTasa"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Label="Valor (%)"
+                             For="@(() => _model.ValorTasa)"
+                             Format="F2" />
+            <MudDatePicker Date="_fechaValor"
+                           DateChanged="OnFechaChanged"
+                           Label="Fecha Valor"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           DateFormat="dd/MM/yyyy"
+                           Class="mt-2" />
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="tasaValorForm">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public int TasaVariableId { get; set; }
+    [Parameter] public int ValorId { get; set; }
+
+    private TasaValorDto _model = new();
+    private DateTime? _fechaValor;
+    private bool _isEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ValorId > 0)
+        {
+            _isEdit = true;
+            await LoadValor();
+        }
+        else
+        {
+            _fechaValor = DateTime.Today;
+            _model.FecValorTasa = DateTime.Today;
+        }
+    }
+
+    private async Task LoadValor()
+    {
+        try
+        {
+            var result = await _catalogosApi.GetTasaVariableById(TasaVariableId);
+            if (result.Success && result.Data != null)
+            {
+                var valor = result.Data.Valores.FirstOrDefault(v => v.Id == ValorId);
+                if (valor != null)
+                {
+                    _model.ValorTasa = valor.Valor ?? 0;
+                    _fechaValor = valor.Fecha ?? DateTime.Today;
+                    _model.FecValorTasa = _fechaValor.Value;
+                }
+                else
+                {
+                    _snackbarService.Add("Valor no encontrado", Severity.Error);
+                    Close();
+                }
+            }
+            else
+            {
+                _snackbarService.Add("No se pudo cargar el valor", Severity.Error);
+                Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add($"Error al cargar: {ex.Message}", Severity.Error);
+            Close();
+        }
+    }
+
+    private void OnFechaChanged(DateTime? fecha)
+    {
+        _fechaValor = fecha;
+        _model.FecValorTasa = fecha ?? DateTime.Today;
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (!_isEdit)
+            {
+                var result = await _catalogosApi.CreateTasaValor(TasaVariableId, _model);
+                if (result.Success)
+                {
+                    _snackbarService.Add("Valor agregado correctamente", Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    _snackbarService.Add(result.Errors?.FirstOrDefault() ?? "Error al agregar", Severity.Error);
+                }
+            }
+            else
+            {
+                var result = await _catalogosApi.UpdateTasaValor(TasaVariableId, ValorId, _model);
+                if (result.Success)
+                {
+                    _snackbarService.Add("Valor actualizado correctamente", Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    _snackbarService.Add(result.Errors?.FirstOrDefault() ?? "Error al actualizar", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}

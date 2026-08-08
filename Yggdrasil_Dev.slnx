@@ -1,0 +1,35 @@
+<Solution>
+  <Folder Name="/Application/" />
+  <Folder Name="/Application/Backend/">
+    <Project Path="src/backend/Yggdrasil.ApiService/Yggdrasil.ApiService.csproj" />
+    <Project Path="src/backend/Yggdrasil.Common/Yggdrasil.Common.csproj" />
+    <Project Path="src/backend/Yggdrasil.Domain/Yggdrasil.Domain.csproj" />
+    <Project Path="src/backend/Yggdrasil.Infrastructure/Yggdrasil.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Application/Backend/Modules/">
+    <Project Path="src/backend/modules/Yggdrasil.Module.Audit/Yggdrasil.Module.Audit.csproj" />
+    <Project Path="src/backend/modules/Yggdrasil.Module.Auth/Yggdrasil.Module.Auth.csproj" />
+    <Project Path="src/backend/modules/Yggdrasil.Module.Catalog/Yggdrasil.Module.Catalog.csproj" Id="bef874cf-dc5d-49ec-94b1-90d5f1657e50" />
+    <Project Path="src/backend/modules/Yggdrasil.Module.Cobranza/Yggdrasil.Module.Cobranza.csproj" Id="2d14a429-aa92-45bb-8214-95dbc97ebf21" />
+    <Project Path="src/backend/modules/Yggdrasil.Module.Cotizador/Yggdrasil.Module.Cotizador.csproj" Id="79a3b2cd-b3f6-44b2-8443-1b5d306ad994" />
+    <Project Path="src/backend/modules/Yggdrasil.Module.Credito/Yggdrasil.Module.Credito.csproj" Id="89518968-f487-410a-92ef-83127e799893" />
+    <Project Path="src/backend/modules/Yggdrasil.Module.Operacion/Yggdrasil.Module.Operacion.csproj" Id="311b6fb0-6cfe-449c-b9e2-8edebcd6ea66" />
+    <Project Path="src/backend/modules/Yggdrasil.Module.Originacion/Yggdrasil.Module.Originacion.csproj" Id="d5f08b9c-1a0d-4ed4-beae-398c74e4b405" />
+    <Project Path="src/backend/modules/Yggdrasil.Module.System/Yggdrasil.Module.System.csproj" />
+  </Folder>
+  <Folder Name="/Application/Frontend/">
+    <Project Path="src/frontend/Yggdrasil.Blazor/Yggdrasil.Blazor.csproj" Id="70e760eb-dde0-4037-aed1-69919fe63565" />
+    <Project Path="src/frontend/Yggdrasil.WasmApp/Yggdrasil.WasmApp.csproj" />
+  </Folder>
+  <Folder Name="/Application/Frontend/Modules/">
+    <Project Path="src/frontend/modules/Yggdrasil.Module.Audit.UI/Yggdrasil.Module.Audit.UI.csproj" Id="7c031e08-9532-410a-b386-78dd371db5d3" />
+    <Project Path="src/frontend/modules/Yggdrasil.Module.Catalog.UI/Yggdrasil.Module.Catalog.UI.csproj" Id="9430e429-fd98-46ff-b1e5-97b442f52bd2" />
+    <Project Path="src/frontend/modules/Yggdrasil.Module.Cobranza.UI/Yggdrasil.Module.Cobranza.UI.csproj" Id="db430f36-89cd-48d7-902b-9fca52eeb61d" />
+    <Project Path="src/frontend/modules/Yggdrasil.Module.Credito.UI/Yggdrasil.Module.Credito.UI.csproj" Id="d0091518-712c-40f9-b99a-a9fa0b88f287" />
+    <Project Path="src/frontend/modules/Yggdrasil.Module.Layout.UI/Yggdrasil.Module.Layout.UI.csproj" />
+    <Project Path="src/frontend/modules/Yggdrasil.Module.System.UI/Yggdrasil.Module.System.UI.csproj" Id="84e75184-d00b-437f-8196-f58885004876" />
+  </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="tools/Yggdrasil.Tools/Yggdrasil.Tools.csproj" Id="0b9cea61-ce6a-411d-8518-33eccfeecf01" />
+  </Folder>
+</Solution>

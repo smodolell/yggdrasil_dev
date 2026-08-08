@@ -1,0 +1,18 @@
+﻿@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+
+@using Yggdrasil.Module.Layout.UI.Components.States
+@using Yggdrasil.Module.Layout.UI.Constants
+
+@inject AuthenticationStateProvider _authState
+@inject NavigationManager _navManager;
+@inject IJSRuntime _jsRuntime;
+@inject LayoutState _layoutState;
+@inject ThemeState _themeState;
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbarService;

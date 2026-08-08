@@ -1,0 +1,163 @@
+@using Yggdrasil.Module.Audit.UI.Services.Audits
+@using Yggdrasil.Module.Audit.UI.Services.Audits.DTOs
+@inject IAuditsApi _auditsApi;
+
+<MudPaper Class="pa-3 mb-3" Outlined="true">
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField T="string"
+                          @bind-Value="_searchText"
+                          Label="Buscar"
+                          Margin="Margin.Dense"
+                          Variant="Variant.Outlined"
+                          Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudNumericField T="int?"
+                             @bind-Value="_auditEventId"
+                             Label="Evento ID"
+                             Margin="Margin.Dense"
+                             Variant="Variant.Outlined"
+                             Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudSelect T="bool?"
+                       @bind-Value="_hasError"
+                       Label="Estado"
+                       Margin="Margin.Dense"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                <MudSelectItem T="bool?" Value="@((bool?)null)">Todos</MudSelectItem>
+                <MudSelectItem T="bool?" Value="@((bool?)true)">Con error</MudSelectItem>
+                <MudSelectItem T="bool?" Value="@((bool?)false)">Sin error</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudDatePicker @bind-Date="_fechaInicio"
+                           Label="Fecha desde"
+                           Margin="Margin.Dense"
+                           Variant="Variant.Outlined"
+                           Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudDatePicker @bind-Date="_fechaFin"
+                           Label="Fecha hasta"
+                           Margin="Margin.Dense"
+                           Variant="Variant.Outlined"
+                           Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="1" Class="d-flex align-center">
+            <MudIconButton Icon="@Icons.Material.Filled.Search"
+                           Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           OnClick="() => dataGridRef.ReloadServerData()" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudDataGrid Outlined="true"
+             Dense="true"
+             Bordered="true"
+             ServerData="GetTableData"
+             FixedHeader="true"
+             SortMode="SortMode.Single"
+             @ref="dataGridRef"
+             T="AuditListItemDto">
+    <Columns>
+        <PropertyColumn Title="Fecha" Property="x => x.RegisteredDate" Format="dd/MM/yyyy HH:mm:ss" />
+        <PropertyColumn Title="Usuario" Property="x => x.UserName" />
+        <PropertyColumn Title="Descripción" Property="x => x.Description" />
+        <TemplateColumn Title="Error" HeaderStyle="width:70px;text-align:center;">
+            <CellTemplate>
+                @if (context.Item.HasError)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Mensaje" HeaderStyle="width:30%;">
+            <CellTemplate>
+                <MudText Typo="Typo.body2" Style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;">
+                    @context.Item.Message
+                </MudText>
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn HeaderStyle="white-space:nowrap;width:60px;" StickyRight="true" Resizable="false" Title="Acciones">
+            <CellTemplate>
+                <MudIconButton Size="@MudBlazor.Size.Small"
+                               Icon="@Icons.Material.Outlined.Visibility"
+                               Color="Color.Primary"
+                               OnClick="() => ViewClick(context.Item)" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="AuditListItemDto" />
+    </PagerContent>
+    <NoRecordsContent>
+        <MudText>No hay registros de <strong>Auditoría</strong></MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+@code {
+    private string? _searchText;
+    private int? _auditEventId;
+    private bool? _hasError;
+    private DateTime? _fechaInicio;
+    private DateTime? _fechaFin;
+
+    private MudDataGrid<AuditListItemDto> dataGridRef = null!;
+    private DialogOptions _optionsDialogs = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    private async Task<GridData<AuditListItemDto>> GetTableData(GridState<AuditListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var pageNumber = gridState.Page + 1;
+            var sortBy = nameof(AuditListItemDto.RegisteredDate);
+            var sortDescending = true;
+            var sortDefinition = gridState.SortDefinitions.FirstOrDefault();
+            if (sortDefinition != null)
+            {
+                sortBy = sortDefinition.SortBy;
+                sortDescending = sortDefinition.Descending;
+            }
+            var result = await _auditsApi.GetAudits(
+                _searchText,
+                _auditEventId,
+                _hasError,
+                _fechaInicio,
+                _fechaFin,
+                pageNumber,
+                gridState.PageSize,
+                sortBy,
+                sortDescending,
+                cancellationToken);
+            return new GridData<AuditListItemDto>()
+            {
+                TotalItems = result.Data!.TotalCount,
+                Items = result.Data!.Results
+            };
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex);
+            return new GridData<AuditListItemDto>()
+            {
+                TotalItems = 0,
+                Items = Array.Empty<AuditListItemDto>()
+            };
+        }
+      
+    }
+
+    private async Task ViewClick(AuditListItemDto item)
+    {
+        var parameters = new DialogParameters { { nameof(AuditDetailDialog.Item), item } };
+        await _dialogService.ShowAsync<AuditDetailDialog>("Detalle de Auditoría", parameters, _optionsDialogs);
+    }
+}

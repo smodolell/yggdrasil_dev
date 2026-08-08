@@ -1,0 +1,133 @@
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi
+
+<MudDialog>
+    <DialogContent>
+        @if (_detalle == null)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <MudTable Items="@_detalle.Valores"
+                      Outlined="true"
+                      Elevation="0"
+                      Dense="true"
+                      Bordered="true">
+                <ToolBarContent>
+                    <MudText Typo="Typo.subtitle2" Class="mr-2">Historial de Valores</MudText>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Filled"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               OnClick="@(() => AddValorClick())">
+                        Agregar Valor
+                    </MudButton>
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width:30%" />
+                    <col style="width:35%" />
+                    <col style="width:25%" />
+                    <col style="width:10%" />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh>Valor (%)</MudTh>
+                    <MudTh>Fecha Valor</MudTh>
+                    <MudTh>Fecha Registro</MudTh>
+                    <MudTh>Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Valor (%)">
+                        @(context.Valor.HasValue ? context.Valor.Value.ToString("F2") : "—")
+                    </MudTd>
+                    <MudTd DataLabel="Fecha Valor">
+                        @(context.Fecha.HasValue ? context.Fecha.Value.ToString("dd/MM/yyyy") : "—")
+                    </MudTd>
+                    <MudTd DataLabel="Fecha Registro">
+                        @(context.FechaRegistro.HasValue ? context.FechaRegistro.Value.ToString("dd/MM/yyyy") : "—")
+                    </MudTd>
+                    <MudTd DataLabel="Acciones">
+                        <MudIconButton Size="@MudBlazor.Size.Small"
+                                       Icon="@Icons.Material.Outlined.Edit"
+                                       Color="Color.Primary"
+                                       OnClick="() => EditValorClick(context.Id)" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText>No hay valores registrados</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public int TasaVariableId { get; set; }
+    [Parameter] public string NomTasa { get; set; } = "";
+
+    private TasaVariableDetalleDto? _detalle;
+    private readonly DialogOptions _optionsSmall = new() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDetalle();
+    }
+
+    private async Task LoadDetalle()
+    {
+        try
+        {
+            var result = await _catalogosApi.GetTasaVariableById(TasaVariableId);
+            if (result.Success && result.Data != null)
+                _detalle = result.Data;
+            else
+                _snackbarService.Add("No se pudo cargar el detalle", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task AddValorClick()
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(TasaValorFormDialog.TasaVariableId), TasaVariableId }
+        };
+        var dialog = await _dialogService.ShowAsync<TasaValorFormDialog>(
+            "Agregar Valor", parameters, _optionsSmall);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+            await LoadDetalle();
+    }
+
+    private async Task EditValorClick(int valorId)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(TasaValorFormDialog.TasaVariableId), TasaVariableId },
+            { nameof(TasaValorFormDialog.ValorId), valorId }
+        };
+        var dialog = await _dialogService.ShowAsync<TasaValorFormDialog>(
+            "Editar Valor", parameters, _optionsSmall);
+        var result = await dialog.Result;
+        if (!result!.Canceled && result.Data is true)
+            await LoadDetalle();
+    }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(true));
+}

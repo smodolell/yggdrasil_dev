@@ -1,0 +1,133 @@
+﻿@using Yggdrasil.Module.Credito.UI.Services.Configuacion
+@using Yggdrasil.Module.Credito.UI.Services.Configuacion.DTOs
+@inject IConfiguracionApi _configuracionApi;
+
+@if (_model != null)
+{
+    <EditForm Model="_model" OnValidSubmit="SaveSubmit" id="MyID">
+        <FluentValidator/>
+        <MudGrid>
+            <MudItem xs="12" sm="12" md="12">
+                <MudTextField @bind-Value="_model.NomPerfil" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Nombre del Perfil" For="@(() => _model.NomPerfil)"></MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6">
+                <MudSwitch @bind-Value="@_model.Activo" Label="¿Activo?" Color="Color.Primary" />
+            </MudItem>
+        </MudGrid>
+        <MudItem xs="12" sm="12" md="12">
+            <MudSimpleTable Dense="true" Outlined="true" Class="mt-3 mb-3" Hover="true" Bordered="true" Striped="true" Style="width:100%">
+                <thead>
+                    <tr>
+                        <th colspan="4">
+                            <MudText Typo="Typo.h6">INFORMACIÓN DEL PERFIL</MudText>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>Descripción</th>
+                        <th>Alta</th>
+                        <th>Edicion</th>
+                        <th>Tabs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < _model.Items.Count(); i++)
+                    {
+                        var contador = i;
+                        <tr>
+                            <td>@_model.Items[contador].NomSeccion</td>
+                            <td>
+                                <MudStack Row="true" Justify="Justify.Center">
+                                    <MudSwitch @bind-Value="@_model.Items[contador].ActivoCreate"
+                                               ThumbIcon="@(_model.Items[contador].ActivoCreate == true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
+                                               ThumbIconColor="@(_model.Items[contador].ActivoCreate == true ? Color.Success : Color.Error)"
+                                               Disabled="!_model.Items[contador].IsCreate">
+
+                                    </MudSwitch>
+                                </MudStack>
+                            </td>
+                            <td>
+                                <MudStack Row="true" Justify="Justify.Center">
+                                    <MudSwitch @bind-Value="@_model.Items[contador].ActivoEdit"
+                                               ThumbIcon="@(_model.Items[contador].ActivoEdit == true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
+                                               ThumbIconColor="@(_model.Items[contador].ActivoEdit == true ? Color.Success : Color.Error)"
+                                               Disabled="!_model.Items[contador].IsEdit">
+                                    </MudSwitch>
+                                </MudStack>
+                            </td>
+                            <td>
+                                <MudStack Row="true" Justify="Justify.Center">
+                                    <MudSwitch @bind-Value="@_model.Items[contador].ActivoExtension"
+                                               ThumbIcon="@(_model.Items[contador].ActivoExtension == true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
+                                               ThumbIconColor="@(_model.Items[contador].ActivoExtension == true ? Color.Success : Color.Error)"
+                                               Disabled="!_model.Items[contador].IsExtension">
+                                    </MudSwitch>
+                                </MudStack>
+                            </td>
+                        </tr>
+
+                    }
+                </tbody>
+            </MudSimpleTable>
+
+
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12">
+            <MudStack Row="true" Justify="Justify.FlexEnd">
+                <MudButton Variant="Variant.Filled" FullWidth="false"
+                           Color="Color.Primary"
+                           Size="Size.Medium"
+                           ButtonType="ButtonType.Submit"
+                           StartIcon="@Icons.Material.Filled.Save">
+                    Guardar
+                </MudButton>
+            </MudStack>
+        </MudItem>
+    </EditForm>
+}
+
+
+@code {
+    [Parameter]
+    public int PerfilId { get; set; }
+    private PerfilEditDto? _model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_model == null)
+        {
+            await InitialData();
+        }
+    }
+
+    private async Task InitialData()
+    {
+
+        try
+        {
+            var result = await _configuracionApi.GetPerfilById(PerfilId);
+            _model = result.Data!;
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al guardar el perfil");
+        }
+
+    }
+
+    private async Task SaveSubmit()
+    {
+        if (_model == null) return;
+        try
+        {
+            var result = await _configuracionApi.SavePerfil(_model);
+            PerfilId = result.Data!;
+            await InitialData();
+
+            _snackbarService.Add(result.Message, Severity.Success);
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al guardar el perfil");
+        }
+    }
+}

@@ -1,0 +1,119 @@
+﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi;
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="SaveSubmit" style="width:100%;">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="3">
+                    <MudTextField @bind-Value="_model.ClavePeriodicidad"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Clave corta"
+                                  For="@(() => _model.ClavePeriodicidad)">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="9">
+                    <MudTextField @bind-Value="_model.NomPeriodicidad"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Periodicidad"
+                                  For="@(() => _model.NomPeriodicidad)">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="3">
+                    <MudNumericField T="short" @bind-Value="_model.ParamDias" Label="Días" Margin="Margin.Dense" Variant="Variant.Outlined" Min="1" Max="31" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="3">
+                    <MudNumericField T="short" @bind-Value="_model.ParamMes" Label="Mes" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="36" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="3">
+                    <MudNumericField T="short" @bind-Value="_model.NroPagosMes" Label="Pagos por mes" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="31" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="3">
+                    <MudNumericField T="short" @bind-Value="_model.NroPagosAnio" Label="Pagos por Año" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="365" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="3">
+                    <MudSwitch @bind-Value="@_model.UsaDias" Label="Usa Dias" Color="Color.Primary" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="3">
+                    <MudSwitch @bind-Value="@_model.Activo" Label="Activo" Color="Color.Primary" />
+                </MudItem>
+            </MudGrid>
+
+
+            <div class="mt-4 d-flex">
+                <MudSpacer />
+                <MudButton Variant="Variant.Text" FullWidth="false"
+                           Color="Color.Primary"
+                           Size="Size.Medium"
+                           ButtonType="ButtonType.Submit"
+                           StartIcon="@Icons.Material.Filled.Upload">Guardar</MudButton>
+            </div>
+        </EditForm>
+
+    </DialogContent>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public int PeriodicidadId { get; set; }
+
+    private PeriodicidadEditDto _model = new PeriodicidadEditDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (PeriodicidadId != 0)
+        {
+            try
+            {
+                var result = await _catalogosApi.GetPeriodicidadById(PeriodicidadId);
+                _model = result.Data!;
+                _snackbarService.Add(result.Errors.FirstOrDefault() ?? "", Severity.Error);
+            }
+            catch (YggdrasilApiException ex)
+            {
+                await _dialogService.ShowErrorDialog(ex);
+            }
+            catch (Exception ex)
+            {
+                _snackbarService.Add(ex.Message, Severity.Error);
+            }
+
+
+
+        }
+    }
+
+    private async Task SaveSubmit()
+    {
+
+        try
+        {
+            if (PeriodicidadId == 0)
+            {
+                var result = await _catalogosApi.CreatePeriodicidad(_model);
+                _snackbarService.Add(result.Message, Severity.Success);
+            }
+            else
+            {
+                var result = await _catalogosApi.UpdatePeriodicidad(PeriodicidadId, _model);
+                _snackbarService.Add(result.Message, Severity.Success);
+            }
+            MudDialog?.Close(DialogResult.Ok(true));
+
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex);
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+}

@@ -1,0 +1,117 @@
+@using Yggdrasil.Module.Credito.UI.Services.Configuacion
+@using Yggdrasil.Module.Credito.UI.Services.Configuacion.DTOs
+@inject IConfiguracionApi _configuracionApi
+
+<MudPaper Outlined="true" Class="pa-4 mb-4">
+    <MudText Typo="Typo.h6" Class="mb-3">Conceptos Financiados</MudText>
+    <MudDataGrid Items="@_items"
+                 Dense="true"
+                 Bordered="true"
+                 Outlined="true"
+                 T="ConceptoFinanciadoListItemDto">
+        <ToolBarContent>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Color="Color.Primary"
+                       OnClick="AddClick">
+                Agregar
+            </MudButton>
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Title="Concepto" Property="x => x.Concepto" />
+            <PropertyColumn Title="Tipo Movimiento" Property="x => x.NomTipoMovimiento" HeaderStyle="width:180px;" />
+            <PropertyColumn Title="Tipo Cálculo" Property="x => x.NomTipoCalculo" HeaderStyle="width:150px;" />
+            <TemplateColumn Title="Monto/%" HeaderStyle="width:120px;">
+                <CellTemplate>
+                    @if (context.Item.Monto > 0)
+                    {
+                        <MudText Typo="Typo.body2">$@context.Item.Monto.ToString("N2")</MudText>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Edición" HeaderStyle="width:80px;">
+                <CellTemplate>
+                    <MudCheckBox Value="context.Item.PermiteEdicion" T="bool" ReadOnly="true" />
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn HeaderStyle="white-space:nowrap;width:80px;" StickyRight="true" Resizable="false" Title="Acciones">
+                <CellTemplate>
+                    <MudStack Row="true" Justify="Justify.FlexEnd">
+                        <MudIconButton Size="@MudBlazor.Size.Small"
+                                       Icon="@Icons.Material.Outlined.Edit"
+                                       Color="Color.Primary"
+                                       OnClick="() => EditClick(context.Item.Id)" />
+                        <MudIconButton Size="@MudBlazor.Size.Small"
+                                       Icon="@Icons.Material.Outlined.Delete"
+                                       Color="Color.Error"
+                                       OnClick="() => DeleteClick(context.Item)" />
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <NoRecordsContent>
+            <MudText>No hay <strong>Conceptos Financiados</strong> registrados</MudText>
+        </NoRecordsContent>
+    </MudDataGrid>
+</MudPaper>
+
+@code {
+    [Parameter] public int ProductoId { get; set; }
+
+    private List<ConceptoFinanciadoListItemDto> _items = new();
+    private DialogOptions _dialogOptions = new() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        try
+        {
+            var result = await _configuracionApi.GetConceptosFinanciados(ProductoId);
+            _items = result.Data ?? new();
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar conceptos financiados");
+        }
+    }
+
+    private async Task AddClick()
+    {
+        var parameters = new DialogParameters { { "ProductoId", ProductoId } };
+        var dialog = await _dialogService.ShowAsync<ConceptoFinanciadoFormDialog>("Nuevo Concepto Financiado", parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+            await LoadData();
+    }
+
+    private async Task EditClick(int id)
+    {
+        var parameters = new DialogParameters { { "CargoId", id }, { "ProductoId", ProductoId } };
+        var dialog = await _dialogService.ShowAsync<ConceptoFinanciadoFormDialog>("Editar Concepto Financiado", parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+            await LoadData();
+    }
+
+    private async Task DeleteClick(ConceptoFinanciadoListItemDto item)
+    {
+        await _dialogService.ShowConfirmDialog(
+            $"¿Desea eliminar el concepto '{item.Concepto}'?",
+            "Eliminar",
+            async (e) =>
+            {
+                try
+                {
+                    var result = await _configuracionApi.DeleteConceptoFinanciado(item.Id);
+                    await LoadData();
+                    _snackbarService.Add(result.Message, Severity.Success);
+                }
+                catch (YggdrasilApiException ex)
+                {
+                    _snackbarService.Add(ex.Message, Severity.Error);
+                }
+            });
+    }
+}

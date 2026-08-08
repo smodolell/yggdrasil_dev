@@ -1,0 +1,6 @@
+@Yggdrasil.CreditFlow.ApiService_HostAddress = http://localhost:5182
+
+GET {{Yggdrasil.CreditFlow.ApiService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

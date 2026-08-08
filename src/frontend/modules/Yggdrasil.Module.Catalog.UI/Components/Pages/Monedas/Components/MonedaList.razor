@@ -1,0 +1,141 @@
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi;
+
+<MudDataGrid Outlined="true"
+             Dense="true"
+             Bordered="true"
+             ServerData="GetTableData"
+             FixedHeader="true"
+             SortMode="SortMode.Single"
+             @ref="dataGridRef"
+             T="MonedaListItemDto">
+    <ToolBarContent>
+        <MudSpacer></MudSpacer>
+        <div style="width:300px">
+            <MudTextField T="string"
+                          @bind-Value="@_searchText"
+                          Margin="Margin.Dense"
+                          Clearable="true"
+                          Placeholder="Buscar.."></MudTextField>
+        </div>
+        <MudIconButton Size="MudBlazor.Size.Medium"
+                       Icon="@Icons.Material.Filled.Search"
+                       OnClick="()=>dataGridRef.ReloadServerData()"
+                       Variant="Variant.Text"
+                       Color="Color.Primary">
+        </MudIconButton>
+        <MudStack Row="true" AlignItems="AlignItems.End">
+            <MudButton Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => AddClick())"
+                       Color="Color.Primary">
+                Agregar
+            </MudButton>
+        </MudStack>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Title="Clave" Property="x => x.ClaveMoneda" StickyLeft="true" />
+        <PropertyColumn Title="Nombre" Property="x => x.NomMoneda" />
+        <TemplateColumn Title="Por Defecto" HeaderStyle="white-space:nowrap;width:100px;" Sortable="false">
+            <CellTemplate>
+                <MudIcon Icon="@(context.Item.PorDefecto ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)"
+                         Color="@(context.Item.PorDefecto ? Color.Success : Color.Default)"
+                         Size="Size.Small" />
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn HeaderStyle="white-space:nowrap;width:50px;" StickyRight="true" Resizable="false" Title="Acciones">
+            <CellTemplate>
+                <MudStack Row="true" Justify="Justify.FlexEnd">
+                    <MudIconButton Size="@MudBlazor.Size.Small"
+                                   Icon="@Icons.Material.Outlined.Edit"
+                                   Color="Color.Primary"
+                                   OnClick="()=>EditClick(context.Item.Id)" />
+                    <MudIconButton Size="@MudBlazor.Size.Small"
+                                   Icon="@Icons.Material.Outlined.Delete"
+                                   Color="Color.Error"
+                                   OnClick="()=>DeleteClick(context.Item)" />
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="MonedaListItemDto" />
+    </PagerContent>
+    <NoRecordsContent>
+        <MudText>No hay registros de <strong>Moneda</strong></MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+@code {
+    private string? _searchText;
+    private MudDataGrid<MonedaListItemDto> dataGridRef = null!;
+    private DialogOptions _optionsDialogs = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    private async Task<GridData<MonedaListItemDto>> GetTableData(GridState<MonedaListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        var _pageNumber = (gridState.Page + 1);
+        var _sortBy = nameof(MonedaListItemDto.NomMoneda);
+        var _sortDescending = false;
+        var _sortDefinitions = gridState.SortDefinitions.FirstOrDefault();
+        if (_sortDefinitions != null)
+        {
+            _sortBy = _sortDefinitions.SortBy;
+            _sortDescending = _sortDefinitions.Descending;
+        }
+        var paginatedList = await _catalogosApi.GetMonedas(_searchText,
+            _pageNumber,
+            gridState.PageSize, _sortBy, _sortDescending, cancellationToken);
+        return new GridData<MonedaListItemDto>()
+        {
+            TotalItems = paginatedList.Data!.TotalCount,
+            Items = paginatedList.Data!.Results
+        };
+    }
+
+    private async Task AddClick()
+    {
+        var parameters = new DialogParameters { };
+        var dialog = await _dialogService.ShowAsync<MonedaFormDialog>("Nueva Moneda", parameters, _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+    }
+
+    private async Task EditClick(int id)
+    {
+        var parameters = new DialogParameters { { "MonedaId", id } };
+        var dialog = await _dialogService.ShowAsync<MonedaFormDialog>("Editar Moneda", parameters, _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+    }
+
+    private async Task DeleteClick(MonedaListItemDto item)
+    {
+        await _dialogService.ShowConfirmDialog($"¿Desea eliminar la Moneda {item.NomMoneda}?", "Eliminar", async (e) =>
+        {
+            try
+            {
+                var result = await _catalogosApi.DeleteMoneda(item.Id);
+                if (result.Success)
+                {
+                    await dataGridRef.ReloadServerData();
+                    _snackbarService.Add(result.Message, Severity.Success);
+                }
+                else
+                {
+                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                _snackbarService.Add(ex.Message, Severity.Error);
+            }
+        });
+    }
+}

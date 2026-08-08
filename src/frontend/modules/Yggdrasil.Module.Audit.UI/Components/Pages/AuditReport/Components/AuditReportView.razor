@@ -1,0 +1,117 @@
+@using Yggdrasil.Module.Audit.UI.Services.Audits
+@using Yggdrasil.Module.Audit.UI.Services.Audits.DTOs
+@inject IAuditsApi _auditsApi;
+
+<MudPaper Class="pa-3 mb-3" Outlined="true">
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="2">
+            <MudNumericField T="int?"
+                             @bind-Value="_anio"
+                             Label="Año"
+                             Margin="Margin.Dense"
+                             Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudNumericField T="int?"
+                             @bind-Value="_mes"
+                             Label="Mes"
+                             Margin="Margin.Dense"
+                             Variant="Variant.Outlined"
+                             Min="1"
+                             Max="12" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField T="string"
+                          @bind-Value="_userName"
+                          Label="Usuario"
+                          Margin="Margin.Dense"
+                          Variant="Variant.Outlined"
+                          Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="1" Class="d-flex align-center">
+            <MudIconButton Icon="@Icons.Material.Filled.Search"
+                           Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           OnClick="LoadReport" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (_loading)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else if (_report != null)
+{
+    @if (_report.Usuarios.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info">No hay datos para el período seleccionado.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@_report.Usuarios"
+                  Dense="true"
+                  Bordered="true"
+                  Outlined="true"
+                  Elevation="0"
+                  Footer="true">
+            <HeaderContent>
+                <MudTh>Usuario</MudTh>
+                @foreach (var col in _report.Columnas)
+                {
+                    <MudTh Style="text-align:right;">@col.AuditEvent</MudTh>
+                }
+                <MudTh Style="text-align:right;">Total</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Usuario">@context</MudTd>
+                @foreach (var col in _report.Columnas)
+                {
+                    var cantidad = _report.Items
+                        .FirstOrDefault(i => i.UserName == context && i.AuditEventId == col.AuditEventId)?.Cantidad ?? 0;
+                    <MudTd DataLabel="@col.AuditEvent" Style="text-align:right;">@cantidad</MudTd>
+                }
+                <MudTd DataLabel="Total" Style="text-align:right;font-weight:600;">
+                    @_report.Items.Where(i => i.UserName == context).Sum(i => i.Cantidad)
+                </MudTd>
+            </RowTemplate>
+            <FooterContent>
+                <MudTd Style="font-weight:600;">Total</MudTd>
+                @foreach (var col in _report.Columnas)
+                {
+                    <MudTd Style="text-align:right;font-weight:600;">
+                        @_report.Items.Where(i => i.AuditEventId == col.AuditEventId).Sum(i => i.Cantidad)
+                    </MudTd>
+                }
+                <MudTd Style="text-align:right;font-weight:600;">
+                    @_report.Items.Sum(i => i.Cantidad)
+                </MudTd>
+            </FooterContent>
+            <NoRecordsContent>
+                <MudText>No hay datos para el reporte</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    }
+}
+
+@code {
+    private int? _anio = DateTime.Now.Year;
+    private int? _mes = DateTime.Now.Month;
+    private string? _userName;
+    private bool _loading;
+    private AuditReportDto? _report;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReport();
+    }
+
+    private async Task LoadReport()
+    {
+        _loading = true;
+        StateHasChanged();
+        var result = await _auditsApi.GetAuditReport(_anio, _mes, _userName);
+        _report = result.Data;
+        _loading = false;
+    }
+}

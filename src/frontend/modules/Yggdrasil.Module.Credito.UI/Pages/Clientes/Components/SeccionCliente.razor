@@ -1,0 +1,216 @@
+﻿@attribute [SeccionPersona(SeccionPersonaConstants.INFORMACION_CLIENTE, SeccionPersonaConstants.INFORMACION_CLIENTE_LABEL)]
+@implements ISeccionPersonaCreate
+@implements ISeccionPersonaEdit
+@using Yggdrasil.Module.Credito.UI.Services.Clientes
+@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
+@using Yggdrasil.Module.Credito.UI.Services.SelectLists
+@inject IClientesApi _clienteService;
+@inject ISelectListsApi _selectListService;
+
+<EditForm Model="@_model" @ref="_editForm">
+    <FluentValidator AsyncMode =" true" />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="3">
+            <MudSelect Margin="Margin.Dense"
+                       T="int?"
+                       Value="_model.TipoPersonaId"
+                       Label="Tipo de Persona"
+                       ValueChanged="@((val)=>ChangeTipoPersona(val))"
+                       For="@(() => _model.TipoPersonaId)"
+                       Variant="Variant.Outlined">
+                @if (_listTipoPersona != null)
+                {
+                    @foreach (var item in _listTipoPersona)
+                    {
+                        <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.Nombre"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Nombre"
+                          For="@(() => _model.Nombre)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.Apellido"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Apellido"
+                          For="@(() => _model.Apellido)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.DNI"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="DNI"
+                          For="@(() => _model.DNI)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudSelect Margin="Margin.Dense"
+                       T="int?"
+                       @bind-Value="_model.GeneroId"
+                       Label="Genero"
+                       For="@(() => _model.GeneroId)"
+                       Variant="Variant.Outlined">
+                @if (_listGenero != null)
+                {
+                    @foreach (var item in _listGenero)
+                    {
+                        <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Margin="Margin.Dense"
+                           OpenTo="OpenTo.Year"
+                           Label="Fecha Nacimiento"
+                           Variant="Variant.Outlined"
+                           @bind-Date="_model.FechaNacimiento"
+                           For="@(() => _model.FechaNacimiento)">
+            </MudDatePicker>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.CUIT"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="CUIT"
+                          For="@(() => _model.CUIT)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudSelect Margin="Margin.Dense" T="int?" @bind-Value="_model.EdoCivilId" Label="Edo. Civil" Variant="Variant.Outlined">
+                @if (_listEdoCivil != null)
+                {
+                    @foreach (var item in _listEdoCivil)
+                    {
+                        <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="_model.Email"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Email"
+                          For="@(() => _model.Email)">
+            </MudTextField>
+        </MudItem>
+        @if (_showPersonaJuridica)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField @bind-Value="_model.RazonSocial"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Label="Razón Social"
+                              For="@(() => _model.RazonSocial)">
+                </MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudDatePicker Margin="Margin.Dense"
+                               OpenTo="OpenTo.Year"
+                               Label="Fecha Contitución"
+                               Variant="Variant.Outlined"
+                               @bind-Date="_model.FechaConstitucion"
+                               For="@(() => _model.FechaConstitucion)">
+                </MudDatePicker>
+            </MudItem>
+
+        }
+
+    </MudGrid>
+
+
+</EditForm>
+
+@code
+{
+    [Parameter]
+    public int PersonaId { get; set; }
+
+    [Parameter]
+    public EventCallback<(int, bool)> OnValidationChanged { get; set; }
+
+    private ClienteEditDto _model = new ClienteEditDto();
+
+    private List<SelectListItemDto>? _listTipoPersona;
+    private List<SelectListItemDto>? _listEdoCivil;
+    private List<SelectListItemDto>? _listGenero;
+
+
+    private bool _showPersonaJuridica = false;
+    private EditForm? _editForm;
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (_listTipoPersona == null)
+        {
+            var result = await _selectListService.GetTiposPersonaAsync();
+            _listTipoPersona = result.Data;
+        }
+
+        if (_listEdoCivil == null)
+        {
+            var result = await _selectListService.GetEstadosCivilesAsync();
+            _listEdoCivil = result.Data;
+        }
+
+        if (_listGenero == null)
+        {
+            var result = await _selectListService.GetGenerosAsync();
+            _listGenero = result.Data;
+        }
+
+        if (PersonaId != 0)
+        {
+            var result = await _clienteService.GetSeccionClienteEdit(PersonaId);
+            _model = result.Data!;
+            _showPersonaJuridica = _showPersonaJuridica = _model.TipoPersonaId != null && _model.TipoPersonaId == 1;
+        }
+    }
+
+
+    public async Task<Result> Create(int personaId)
+    {
+        _model.PersonaId = personaId;
+        var result = await _clienteService.SaveSeccionClienteEdit(personaId, _model);
+        return Result.Success();
+    }
+
+    public async Task<Result> Save()
+    {
+        var result = await _clienteService.SaveSeccionClienteEdit(PersonaId, _model);
+        return Result.Success();
+    }
+
+    public async Task ValidateAsync()
+    {
+        var editContext = _editForm?.EditContext;
+
+        if (editContext != null)
+        {
+            bool isValid = await editContext.ValidateAsync();
+
+            if (OnValidationChanged.HasDelegate)
+            {
+                await OnValidationChanged.InvokeAsync((SeccionPersonaConstants.INFORMACION_CLIENTE, isValid));
+            }
+
+        }
+    }
+
+    private void ChangeTipoPersona(int? value)
+    {
+        if (_model == null) return;
+        _model.TipoPersonaId = value;
+        _showPersonaJuridica = _model.TipoPersonaId != null && _model.TipoPersonaId == 1;
+    }
+
+}

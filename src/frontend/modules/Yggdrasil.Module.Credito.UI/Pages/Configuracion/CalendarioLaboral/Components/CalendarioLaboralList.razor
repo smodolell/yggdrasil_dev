@@ -1,0 +1,193 @@
+@using Microsoft.JSInterop
+@using Yggdrasil.Module.Credito.UI.Services.Configuacion
+@using Yggdrasil.Module.Credito.UI.Services.Configuacion.DTOs
+@inject IConfiguracionApi _configuracionApi;
+@inject IJSRuntime _jsRuntime;
+
+<MudDataGrid Outlined="true"
+             Dense="true"
+             Bordered="true"
+             ServerData="GetTableData"
+             FixedHeader="true"
+             SortMode="SortMode.Single"
+             @ref="dataGridRef"
+             T="CalendarioLaboralListItemDto">
+    <ToolBarContent>
+        <div style="width:130px">
+            <MudNumericField T="int?" @bind-Value="_anio" Margin="Margin.Dense" Label="Año" Min="2000" Max="2100" Clearable="true"></MudNumericField>
+        </div>
+        <div style="width:150px" class="ml-2">
+            <MudSelect T="int?" @bind-Value="_mes" Margin="Margin.Dense" Label="Mes" Clearable="true">
+                @for (var m = 1; m <= 12; m++)
+                {
+                    var mes = m;
+                    <MudSelectItem T="int?" Value="@mes">@System.Globalization.CultureInfo.GetCultureInfo("es-MX").DateTimeFormat.GetMonthName(mes)</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        <MudIconButton Size="MudBlazor.Size.Medium"
+                       Icon="@Icons.Material.Filled.Search"
+                       OnClick="()=>dataGridRef.ReloadServerData()"
+                       Variant="Variant.Text"
+                       Color="Color.Primary">
+        </MudIconButton>
+        <MudSpacer></MudSpacer>
+        <MudStack Row="true" AlignItems="AlignItems.End">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.CloudDownload" OnClick="@(() => DescargarLayoutClick())" Color="Color.Primary">Descargar Layout</MudButton>
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.CloudUpload" OnClick="@(() => ImportarClick())" Color="Color.Primary">Importar Días Inhábiles</MudButton>
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Event" OnClick="@(() => GenerarClick())" Color="Color.Primary">Generar Calendario</MudButton>
+        </MudStack>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Title="Fecha" Property="x => x.Fecha" Format="dd/MM/yyyy" HeaderStyle="width:120px;" />
+        <TemplateColumn Resizable="false" Title="Hábil" HeaderStyle="width:70px;">
+            <CellTemplate>
+                <MudSwitch Value="context.Item.EsHabil" T="bool"
+                           ValueChanged="v => ChangeEsHabil(context.Item, v)"
+                           Color="Color.Primary"
+                           Size="Size.Small">
+                </MudSwitch>
+            </CellTemplate>
+        </TemplateColumn>
+        <PropertyColumn Title="Descripción" Property="x => x.Descripcion" />
+        <TemplateColumn HeaderStyle="white-space:nowrap;width:50px;" StickyRight="true" Resizable="false" Title="Acciones">
+            <CellTemplate>
+                <MudStack Row="true" Justify="Justify.FlexEnd">
+                    <MudIconButton Size="@MudBlazor.Size.Small"
+                                   Icon="@Icons.Material.Outlined.Edit"
+                                   Color="Color.Primary"
+                                   OnClick="()=>EditClick(context.Item)" />
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="CalendarioLaboralListItemDto" />
+    </PagerContent>
+    <NoRecordsContent>
+        <MudText>No hay registros de <strong>Calendario Laboral</strong></MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+@code {
+    private int? _anio = DateTime.Now.Year;
+    private int? _mes;
+
+    private MudDataGrid<CalendarioLaboralListItemDto> dataGridRef = null!;
+    private DialogOptions _optionsDialogs = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    private async Task<GridData<CalendarioLaboralListItemDto>> GetTableData(GridState<CalendarioLaboralListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var _pageNumber = (gridState.Page + 1);
+            var _sortBy = nameof(CalendarioLaboralListItemDto.Fecha);
+            var _sortDescending = false;
+            var _sortDefinitions = gridState.SortDefinitions.FirstOrDefault();
+            if (_sortDefinitions != null)
+            {
+                _sortBy = _sortDefinitions.SortBy;
+                _sortDescending = _sortDefinitions.Descending;
+            }
+            var paginatedList = await _configuracionApi.GetPaginatedCalendarioLaboral(
+                _anio,
+                _mes,
+                _pageNumber,
+                gridState.PageSize,
+                _sortBy,
+                _sortDescending);
+            return new GridData<CalendarioLaboralListItemDto>()
+            {
+                TotalItems = paginatedList.Data!.TotalCount,
+                Items = paginatedList.Data.Results
+            };
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar el calendario laboral");
+            return new GridData<CalendarioLaboralListItemDto>
+            {
+                Items = Array.Empty<CalendarioLaboralListItemDto>(),
+                TotalItems = 0
+            };
+        }
+    }
+
+    private async Task EditClick(CalendarioLaboralListItemDto item)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Id", item.Id },
+            { "Fecha", item.Fecha },
+            { "EsHabil", item.EsHabil },
+            { "Descripcion", item.Descripcion }
+        };
+        var dialog = await _dialogService.ShowAsync<CalendarioLaboralFormDialog>("Editar Día del Calendario", parameters, _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+    }
+
+    private async Task ChangeEsHabil(CalendarioLaboralListItemDto item, bool esHabil)
+    {
+        try
+        {
+            var model = new CalendarioLaboralEditDto { EsHabil = esHabil, Descripcion = item.Descripcion };
+            var result = await _configuracionApi.UpdateCalendarioLaboral(item.Id, model);
+            await dataGridRef.ReloadServerData();
+            _snackbarService.Add(result.Message, Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task GenerarClick()
+    {
+        var dialog = await _dialogService.ShowAsync<GenerarCalendarioDialog>("Generar Calendario Laboral", _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+    }
+
+    private async Task ImportarClick()
+    {
+        var dialog = await _dialogService.ShowAsync<ImportarDiasInhabilesDialog>("Importar Días Inhábiles", _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+    }
+
+    private async Task DescargarLayoutClick()
+    {
+        try
+        {
+            var response = await _configuracionApi.GetLayoutCalendario();
+            response.EnsureSuccessStatusCode();
+
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            var contentType = response.Content.Headers.ContentType?.MediaType
+                ?? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                ?? "layout_calendario_laboral.xlsx";
+
+            var base64 = Convert.ToBase64String(bytes);
+
+            var module = await _jsRuntime.InvokeAsync<IJSObjectReference>
+                ("import", "./_content/Yggdrasil.Module.Credito.UI/js/fileDownload.js");
+            await module.InvokeVoidAsync("downloadFileFromBytes", fileName, contentType, base64);
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+}

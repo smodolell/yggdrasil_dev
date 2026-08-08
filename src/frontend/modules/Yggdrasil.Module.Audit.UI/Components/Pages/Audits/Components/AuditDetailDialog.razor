@@ -1,0 +1,50 @@
+@using Yggdrasil.Module.Audit.UI.Services.Audits.DTOs
+
+<MudDialog>
+    <DialogContent>
+        @if (Item != null)
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudField Label="Evento ID" Variant="Variant.Outlined" Margin="Margin.Dense">@Item.AuditEventId</MudField>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudField Label="Fecha" Variant="Variant.Outlined" Margin="Margin.Dense">@Item.RegisteredDate.ToString("dd/MM/yyyy HH:mm:ss")</MudField>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudField Label="Usuario" Variant="Variant.Outlined" Margin="Margin.Dense">@Item.UserName</MudField>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudField Label="¿Error?" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        @if (Item.HasError)
+                        {
+                            <MudChip T="string" Color="Color.Error" Size="Size.Small">Sí</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Color="Color.Success" Size="Size.Small">No</MudChip>
+                        }
+                    </MudField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudField Label="Descripción" Variant="Variant.Outlined" Margin="Margin.Dense">@Item.Description</MudField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudField Label="Mensaje" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <pre style="white-space:pre-wrap;word-break:break-all;margin:0;font-size:0.85em;">@Item.Message</pre>
+                    </MudField>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Variant="Variant.Filled" Color="Color.Default">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public AuditListItemDto? Item { get; set; }
+
+    private void Close() => MudDialog.Close();
+}

@@ -1,0 +1,5 @@
+@attribute [Route(PageRoute.AuditReportPage)]
+@attribute [AccessPoint(AppMenu.MenuReporte, "Reporte de Auditoría")]
+@using Yggdrasil.Module.Audit.UI.Components.Pages.AuditReport.Components
+<PageHeader Title="Reporte de Auditoría" Icon="@AppMenu.MenuReporteIcon"></PageHeader>
+<AuditReportView></AuditReportView>

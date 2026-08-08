@@ -1,0 +1,124 @@
+﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi;
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="UpdateSumbit" style="width:100%;" id="tasaIvaForm">
+            <FluentValidator />
+            <MudTextField @bind-Value="_model.NomTasaIva"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Nombre de Tasa IVA"
+                          For="@(() => _model.NomTasaIva)">
+            </MudTextField>
+            <MudNumericField @bind-Value="_model.ValorTasa"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Label="Valor de Tasa IVA"
+                             For="@(() => _model.ValorTasa)"
+                             Format="F2">
+            </MudNumericField>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   FullWidth="false"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="tasaIvaForm">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   FullWidth="false"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+    
+    [Parameter] public int TasaIvaId { get; set; }
+    
+    private TasaIvaEditDto _model = new TasaIvaEditDto();
+    private bool _isEdit = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (TasaIvaId > 0)
+        {
+            _isEdit = true;
+            await LoadTasaIva();
+        }
+    }
+
+    private async Task LoadTasaIva()
+    {
+        try
+        {
+            var result = await _catalogosApi.GetTasaIvaById(TasaIvaId);
+            if (result.Success && result.Data != null)
+            {
+                _model = result.Data;
+            }
+            else
+            {
+                _snackbarService.Add("No se pudo cargar la tasa IVA", Severity.Error);
+                Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add($"Error al cargar la tasa IVA: {ex.Message}", Severity.Error);
+            Close();
+        }
+    }
+
+    private async Task UpdateSumbit()
+    {
+        try
+        {
+            if (!_isEdit)
+            {
+                var result = await _catalogosApi.CreateTasaIva(_model);
+                if (result.Success)
+                {
+                    _snackbarService.Add("La tasa IVA se creó correctamente", Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    var error = result.Errors?.FirstOrDefault() ?? "Error al crear la tasa IVA";
+                    _snackbarService.Add(error, Severity.Error);
+                }
+            }
+            else
+            {
+                var result = await _catalogosApi.UpdateTasaIva(_model.TasaIvaId, _model);
+                if (result.Success)
+                {
+                    _snackbarService.Add("La tasa IVA se actualizó correctamente", Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    var error = result.Errors?.FirstOrDefault() ?? "Error al actualizar la tasa IVA";
+                    _snackbarService.Add(error, Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+    
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}

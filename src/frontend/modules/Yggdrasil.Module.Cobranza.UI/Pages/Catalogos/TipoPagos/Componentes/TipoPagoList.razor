@@ -1,0 +1,151 @@
+@using Yggdrasil.Module.Cobranza.UI.Services.Catalogos
+@using Yggdrasil.Module.Cobranza.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi
+
+<MudCard Outlined="true" Elevation="0" Class="border-none bg-transparent">
+    <MudDataGrid T="TipoPagoListItemDto"
+                 Items="_items"
+                 Dense="true"
+                 Outlined="true"
+                 Bordered="false"
+                 FixedHeader="true"
+                 Loading="_loading"
+                 QuickFilter="QuickFilter"
+                 Class="mud-elevation-0 border rounded-lg overflow-hidden">
+
+        <ToolBarContent>
+            <div style="width: 100%; max-width: 350px;">
+                <MudTextField T="string"
+                              @bind-Value="_searchText"
+                              Placeholder="Buscar..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Search"
+                              Clearable="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              IconSize="Size.Small"
+                              Immediate="true" />
+            </div>
+
+            <MudSpacer />
+
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudTooltip Text="Actualizar">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh"
+                                   Size="Size.Small"
+                                   OnClick="CargarDatos"
+                                   Disabled="_loading" />
+                </MudTooltip>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Outlined.Add"
+                           Size="Size.Small"
+                           OnClick="AgregarClick">
+                    Agregar
+                </MudButton>
+            </MudStack>
+        </ToolBarContent>
+
+        <Columns>
+            <PropertyColumn Title="ID" Property="x => x.Id" HeaderStyle="width:80px;" />
+            <PropertyColumn Title="Tipo de Pago" Property="x => x.NomTipoPago" />
+            <TemplateColumn HeaderStyle="width:110px; text-align:right;" StickyRight="true" Resizable="false" Title="Acciones">
+                <CellTemplate>
+                    <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="0">
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Size="Size.Small"
+                                           Icon="@Icons.Material.Outlined.Edit"
+                                           Color="Color.Default"
+                                           OnClick="() => EditarClick(context.Item.Id)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                            <MudIconButton Size="Size.Small"
+                                           Icon="@Icons.Material.Outlined.Delete"
+                                           Color="Color.Error"
+                                           OnClick="() => EliminarClick(context.Item)" />
+                        </MudTooltip>
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+
+        <NoRecordsContent>
+            <div class="pa-8 text-center">
+                <MudText Typo="Typo.body1" Class="mud-text-secondary">No se encontraron <strong>Tipos de Pago</strong></MudText>
+            </div>
+        </NoRecordsContent>
+    </MudDataGrid>
+</MudCard>
+
+@code {
+    private List<TipoPagoListItemDto> _items = new();
+    private string? _searchText;
+    private bool _loading;
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        CloseButton = true,
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true
+    };
+
+    protected override async Task OnInitializedAsync() => await CargarDatos();
+
+    private async Task CargarDatos()
+    {
+        _loading = true;
+        try
+        {
+            var result = await _catalogosApi.GetTiposPago();
+            _items = result.Data ?? new();
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar tipos de pago");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private Func<TipoPagoListItemDto, bool> QuickFilter => x =>
+        string.IsNullOrWhiteSpace(_searchText) ||
+        x.NomTipoPago.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
+        x.Id.ToString().Contains(_searchText);
+
+    private async Task AgregarClick()
+    {
+        var dialog = await _dialogService.ShowAsync<TipoPagoFormDialog>("Nuevo Tipo de Pago", new DialogParameters(), _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled) await CargarDatos();
+    }
+
+    private async Task EditarClick(int id)
+    {
+        var parameters = new DialogParameters { { nameof(TipoPagoFormDialog.TipoPagoId), id } };
+        var dialog = await _dialogService.ShowAsync<TipoPagoFormDialog>("Editar Tipo de Pago", parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled) await CargarDatos();
+    }
+
+    private async Task EliminarClick(TipoPagoListItemDto item)
+    {
+        await _dialogService.ShowConfirmDialog(
+            $"¿Desea eliminar el Tipo de Pago \"{item.NomTipoPago}\"?",
+            "Eliminar",
+            async (_) =>
+            {
+                try
+                {
+                    var result = await _catalogosApi.DeleteTipoPago(item.Id);
+                    _snackbarService.Add(result.Message, Severity.Success);
+                    await CargarDatos();
+                }
+                catch (Exception ex)
+                {
+                    _snackbarService.Add(ex.Message, Severity.Error);
+                }
+            });
+    }
+}

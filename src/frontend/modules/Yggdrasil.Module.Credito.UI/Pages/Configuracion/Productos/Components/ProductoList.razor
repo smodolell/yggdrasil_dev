@@ -1,0 +1,75 @@
+@using Yggdrasil.Module.Credito.UI.Services.Configuacion
+@using Yggdrasil.Module.Credito.UI.Services.Configuacion.DTOs
+@inject IConfiguracionApi _configuracionApi
+
+<MudDataGrid Outlined="true"
+             Dense="true"
+             Bordered="true"
+             Items="@_productos"
+             FixedHeader="true"
+             SortMode="SortMode.Single"
+             T="ProductoListItemDto">
+    <ToolBarContent>
+        <MudSpacer />
+        <div style="width:300px">
+            <MudTextField T="string"
+                          @bind-Value="@_searchText"
+                          Margin="Margin.Dense"
+                          Placeholder="Buscar..." />
+        </div>
+        <MudIconButton Size="MudBlazor.Size.Medium"
+                       Icon="@Icons.Material.Filled.Search"
+                       OnClick="LoadData"
+                       Variant="Variant.Text"
+                       Color="Color.Primary" />
+        <MudButton Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Color="Color.Primary"
+                   OnClick="AddClick">
+            Agregar
+        </MudButton>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Title="Clave" Property="x => x.Id" HeaderStyle="width:80px;" />
+        <PropertyColumn Title="Nombre del Producto" Property="x => x.NomProducto" />
+        <PropertyColumn Title="Empresa" Property="x => x.NomEmpresaOtorgante" HeaderStyle="width:200px;" />
+        <PropertyColumn Title="Moneda" Property="x => x.NomMoneda" HeaderStyle="width:120px;" />
+        <TemplateColumn HeaderStyle="white-space:nowrap;width:80px;" StickyRight="true" Resizable="false" Title="Acciones">
+            <CellTemplate>
+                <MudStack Row="true" Justify="Justify.FlexEnd">
+                    <MudIconButton Size="@MudBlazor.Size.Small"
+                                   Icon="@Icons.Material.Outlined.Edit"
+                                   Color="Color.Primary"
+                                   OnClick="() => EditClick(context.Item.Id)" />
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <NoRecordsContent>
+        <MudText>No hay registros de <strong>Productos</strong></MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+@code {
+    private string? _searchText;
+    private List<ProductoListItemDto> _productos = new();
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        try
+        {
+            var result = await _configuracionApi.GetProductos(q: _searchText);
+            _productos = result.Data!.Results ?? new List<ProductoListItemDto>();
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar productos");
+        }
+    }
+
+    private void AddClick() => _navManager.NavigateTo("." + PageRoute.ProductoNew);
+
+    private void EditClick(int id) => _navManager.NavigateTo("." + PageRoute.ProductoEdit + $"/{id}");
+}

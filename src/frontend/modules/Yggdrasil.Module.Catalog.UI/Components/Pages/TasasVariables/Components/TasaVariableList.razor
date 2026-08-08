@@ -1,0 +1,143 @@
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi
+
+<MudGrid>
+    <MudItem xs="12">
+        @if (_list == null)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <MudTable Class="mb-4"
+                      Items="@_list.Results"
+                      Outlined="true"
+                      Elevation="0"
+                      LoadingProgressColor="Color.Info"
+                      Loading="_loading"
+                      Dense="true"
+                      Bordered="true">
+                <ToolBarContent>
+                    <MudStack Row="true">
+                        <MudTextField @bind-Value="_searchText"
+                                      OnBlur="@(() => InitialData())"
+                                      Label="Tasa Variable"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Text" />
+                    </MudStack>
+                    <MudSpacer />
+                    <MudStack Row="true" AlignItems="AlignItems.End">
+                        <MudButton Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="@(() => AddClick())"
+                                   Color="Color.Primary">
+                            Agregar
+                        </MudButton>
+                    </MudStack>
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width:40%" />
+                    <col style="width:20%" />
+                    <col style="width:25%" />
+                    <col style="width:15%" />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh>Nombre</MudTh>
+                    <MudTh>Último Valor (%)</MudTh>
+                    <MudTh>Fecha Último Valor</MudTh>
+                    <MudTh>Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Nombre">@context.NomTasa</MudTd>
+                    <MudTd DataLabel="Último Valor (%)">
+                        @(context.ValorTasa.HasValue ? context.ValorTasa.Value.ToString("F2") : "—")
+                    </MudTd>
+                    <MudTd DataLabel="Fecha Último Valor">
+                        @(context.FecUltimoValor.HasValue ? context.FecUltimoValor.Value.ToString("dd/MM/yyyy") : "—")
+                    </MudTd>
+                    <MudTd DataLabel="Acciones">
+                        <MudStack Row="true" Justify="Justify.Center">
+                            <MudIconButton Size="@MudBlazor.Size.Small"
+                                           Icon="@Icons.Material.Outlined.Edit"
+                                           Color="Color.Primary"
+                                           OnClick="() => EditClick(context.Id)" />
+                            <MudIconButton Size="@MudBlazor.Size.Small"
+                                           Icon="@Icons.Material.Outlined.Timeline"
+                                           Color="Color.Secondary"
+                                           OnClick="() => ValoresClick(context.Id, context.NomTasa)" />
+                        </MudStack>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText>No hay registros de <strong>Tasa Variable</strong></MudText>
+                </NoRecordsContent>
+            </MudTable>
+        }
+    </MudItem>
+</MudGrid>
+
+@code {
+    private int _pageNumber = 1;
+    private int _pageSize = 10;
+    private bool _loading;
+    private string? _searchText;
+    private PagedResultDto<TasaVariableListItemDto>? _list;
+
+    private readonly DialogOptions _optionsSmall = new() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+    private readonly DialogOptions _optionsMedium = new() { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InitialData();
+    }
+
+    private async Task InitialData()
+    {
+        _loading = true;
+        var result = await _catalogosApi.GetTasasVariables(
+            q: _searchText,
+            page: _pageNumber,
+            size: _pageSize,
+            sortColumn: nameof(TasaVariableListItemDto.NomTasa),
+            sortDescending: false);
+        _list = result.Data;
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private async Task AddClick()
+    {
+        var dialog = await _dialogService.ShowAsync<TasaVariableFormDialog>(
+            "Agregar Tasa Variable", new DialogParameters(), _optionsSmall);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+            await InitialData();
+    }
+
+    private async Task EditClick(int id)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(TasaVariableFormDialog.TasaVariableId), id }
+        };
+        var dialog = await _dialogService.ShowAsync<TasaVariableFormDialog>(
+            "Editar Tasa Variable", parameters, _optionsSmall);
+        var result = await dialog.Result;
+        if (!result!.Canceled && result.Data is true)
+            await InitialData();
+    }
+
+    private async Task ValoresClick(int id, string nombre)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(TasaVariableDetalleDialog.TasaVariableId), id },
+            { nameof(TasaVariableDetalleDialog.NomTasa), nombre }
+        };
+        var dialog = await _dialogService.ShowAsync<TasaVariableDetalleDialog>(
+            $"Valores: {nombre}", parameters, _optionsMedium);
+        await dialog.Result;
+        await InitialData();
+    }
+}

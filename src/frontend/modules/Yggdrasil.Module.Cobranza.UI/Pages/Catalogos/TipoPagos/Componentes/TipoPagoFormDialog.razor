@@ -1,0 +1,77 @@
+@using Yggdrasil.Module.Cobranza.UI.Services.Catalogos
+@using Yggdrasil.Module.Cobranza.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="Guardar" id="TipoPagoForm">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.NomTipoPago"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Nombre"
+                                  For="@(() => _model.NomTipoPago)" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="TipoPagoForm">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="Cerrar"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+    [Parameter] public int? TipoPagoId { get; set; }
+
+    private TipoPagoEditDto _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (TipoPagoId.HasValue)
+        {
+            var result = await _catalogosApi.GetTipoPagoById(TipoPagoId.Value);
+            _model = result.Data ?? new();
+        }
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            if (TipoPagoId.HasValue)
+            {
+                var result = await _catalogosApi.UpdateTipoPago(TipoPagoId.Value, _model);
+                _snackbarService.Add(result.Message, Severity.Success);
+            }
+            else
+            {
+                var result = await _catalogosApi.CreateTipoPago(_model);
+                _snackbarService.Add(result.Message, Severity.Success);
+            }
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void Cerrar() => MudDialog?.Close(DialogResult.Ok(false));
+}

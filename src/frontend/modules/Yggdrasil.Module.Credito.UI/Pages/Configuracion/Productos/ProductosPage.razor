@@ -1,0 +1,16 @@
+@attribute [Route(PageRoute.ProductosPage)]
+@attribute [AccessPoint(AppMenu.MenuConfiguracion, "Productos")]
+@using Yggdrasil.Module.Credito.UI.Pages.Configuracion.Productos.Components
+
+<PageHeader Title="Productos" Icon="@AppMenu.MenuConfiguracionIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+<ProductoList />
+
+@code {
+    private List<BreadcrumbItem> _items = new()
+    {
+        new BreadcrumbItem("Productos", href: null, icon: AppMenu.MenuConfiguracionIcon, disabled: true)
+    };
+}

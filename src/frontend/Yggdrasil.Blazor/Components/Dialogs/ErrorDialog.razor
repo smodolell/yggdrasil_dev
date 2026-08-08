@@ -1,0 +1,58 @@
+﻿@using Yggdrasil.Blazor.Exceptions
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <div class="px-2 py-2">
+            <div class="d-flex align-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.ReportProblem" Color="Color.Error" Size="Size.Large" Class="mr-3" />
+                <MudText Typo="Typo.h6" Class="font-weight-bold mud-text-primary">Error en la operación</MudText>
+            </div>
+
+            @if (Exception != null)
+            {
+                <!-- Formateo del código HTTP en modo píldora/badge moderno -->
+                <div class="d-flex align-center gap-2 mb-3">
+                    <MudChip T="string" Color="Color.Error" Variant="Variant.Text" Size="Size.Small" Class="font-monospace font-weight-bold">
+                        CODE: @((int)Exception.StatusCode)
+                    </MudChip>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary font-monospace">@Exception.StatusCode</MudText>
+                </div>
+
+                @if (Exception.ValidationErrors != null && Exception.ValidationErrors.Any())
+                {
+                    <MudText Typo="Typo.subtitle2" Class="mb-1 font-weight-bold text-dark">Por favor verifique los siguientes campos:</MudText>
+                    <MudList T="string" Dense="true" Class="bg-neutralRounded rounded pa-2" Style="background-color: var(--mud-palette-background-grey);">
+                        @foreach (var kvp in Exception.ValidationErrors)
+                        {
+                            <MudListItem Icon="@Icons.Material.Outlined.ArrowRight" IconColor="Color.Error">
+                                <MudText Typo="Typo.body2">
+                                    <strong class="mud-text-primary">@kvp.Key:</strong> @string.Join(", ", kvp.Value)
+                                </MudText>
+                            </MudListItem>
+                        }
+                    </MudList>
+                }
+                else
+                {
+                    <!-- Contenedor sutil para el mensaje detallado o el Content JSON de la API -->
+                    <div class="pa-3 border rounded border-dashed" style="border-color: var(--mud-palette-lines-default); max-height: 150px; overflow-y: auto;">
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary font-monospace">
+                            @(string.IsNullOrWhiteSpace(Exception.Content) ? Exception.Message : Exception.Content)
+                        </MudText>
+                    </div>
+                }
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-6">Aceptar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public YggdrasilApiException? Exception { get; set; }
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(true));
+}

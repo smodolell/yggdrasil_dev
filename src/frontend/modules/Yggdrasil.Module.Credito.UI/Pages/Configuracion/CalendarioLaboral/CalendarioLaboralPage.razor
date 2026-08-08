@@ -1,0 +1,16 @@
+@attribute [Route(PageRoute.CalendarioLaboralPage)]
+@attribute [AccessPoint(AppMenu.MenuConfiguracion, "Calendario Laboral")]
+@using Yggdrasil.Module.Credito.UI.Pages.Configuracion.CalendarioLaboral.Components
+
+<PageHeader Title="Calendario Laboral" Icon="@Icons.Material.Filled.CalendarMonth">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+<CalendarioLaboralList />
+
+@code {
+    private List<BreadcrumbItem> _items = new()
+    {
+        new BreadcrumbItem("Calendario Laboral", href: null, icon: Icons.Material.Filled.CalendarMonth, disabled: true)
+    };
+}

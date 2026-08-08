@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.*" PrivateAssets="all" />
+    <PackageReference Include="MudBlazor" Version="9.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\modules\Yggdrasil.Module.Audit.UI\Yggdrasil.Module.Audit.UI.csproj" />
+    <ProjectReference Include="..\modules\Yggdrasil.Module.Catalog.UI\Yggdrasil.Module.Catalog.UI.csproj" />
+    <ProjectReference Include="..\modules\Yggdrasil.Module.Cobranza.UI\Yggdrasil.Module.Cobranza.UI.csproj" />
+    <ProjectReference Include="..\modules\Yggdrasil.Module.Credito.UI\Yggdrasil.Module.Credito.UI.csproj" />
+    <ProjectReference Include="..\modules\Yggdrasil.Module.Layout.UI\Yggdrasil.Module.Layout.UI.csproj" />
+    <ProjectReference Include="..\modules\Yggdrasil.Module.System.UI\Yggdrasil.Module.System.UI.csproj" />
+    <ProjectReference Include="..\Yggdrasil.Blazor\Yggdrasil.Blazor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\\service-worker.js" PublishedContent="wwwroot\\service-worker.published.js" />
+  </ItemGroup>
+
+</Project>

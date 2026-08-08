@@ -1,0 +1,106 @@
+﻿@using Yggdrasil.Module.System.UI.Services.System
+@using Yggdrasil.Module.System.UI.Services.System.DTOs
+@inject ISystemApi _systemApi;
+
+<MudDialog>
+    <DialogContent>
+
+        <EditForm Model="_model" OnValidSubmit="SaveSubmit" id="MyID">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="12">
+                    <MudTextField @bind-Value="_model.NomEmpresa"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Nombre de la Empresa" For="@(() => _model.NomEmpresa)">
+                    </MudTextField>
+                </MudItem>
+
+            </MudGrid>
+        </EditForm>
+
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" FullWidth="false"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="MyID">
+            Guardar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public int EmpresaId { get; set; }
+
+
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    private EmpresaEditDto _model = new EmpresaEditDto();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EmpresaId != 0)
+        {
+            await InitialData();
+        }
+    }
+
+    private async Task InitialData()
+    {
+        var result = await _systemApi.GetEmpresaById(EmpresaId);
+        if (result.Success)
+        {
+            _model = new EmpresaEditDto
+            {
+                EmpresaId = result.Data!.Id,
+                NomEmpresa = result.Data!.NomEmpresa
+            };
+        }
+    }
+
+    private async Task SaveSubmit()
+    {
+
+        try
+        {
+            if(EmpresaId == 0)
+            {
+                var result = await _systemApi.CreateEmpresa(_model);
+                if (result.Success)
+                {
+                    _snackbarService.Add(result.Message, Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    _snackbarService.Add(result.Message, Severity.Error);
+                }
+            }
+            else
+            {
+                var result = await _systemApi.UpdateEmpresa(EmpresaId,_model);
+                if (result.Success)
+                {
+                    _snackbarService.Add(result.Message, Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    _snackbarService.Add(result.Message, Severity.Error);
+                }
+            }
+           
+
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+}

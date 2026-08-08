@@ -1,0 +1,67 @@
+﻿@using Yggdrasil.Module.Layout.UI.Components.Themes
+@using Yggdrasil.Module.Layout.UI.Components.Pages
+@using Yggdrasil.Module.Layout.UI.Components
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Navigation
+<ProvidersAggregate></ProvidersAggregate>
+<PageTitle>BlazorAdmin</PageTitle>
+
+<MudLayout>
+    <AuthorizeView Context="authContext">
+        <Authorized>
+            @* Mantenemos el Layout y el Menú siempre visibles.
+               Solo el contenido dinámico puede fallar.
+            *@
+            <AuthorizedLayout>
+                <Child>
+                    <LoggerErrorBoundary @ref="_errorBoundary">
+                        <ChildContent>
+                            @Body
+                        </ChildContent>
+                        <ErrorContent>
+                            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="ma-4">
+                                No se pudo cargar esta sección. Intente navegar a otra página.
+                            </MudAlert>
+                        </ErrorContent>
+                    </LoggerErrorBoundary>
+                </Child>
+            </AuthorizedLayout>
+        </Authorized>
+        <NotAuthorized>
+            <RedirectToLogin />
+        </NotAuthorized>
+    </AuthorizeView>
+</MudLayout>
+
+<div id="blazor-error-ui">
+    Ha ocurrido un error inesperado.
+    <a href="" class="reload">Recargar</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    private LoggerErrorBoundary? _errorBoundary;
+
+    protected override void OnInitialized()
+    {
+        // Suscribimos el evento para limpiar el error automáticamente al navegar
+        Navigation.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // Si la pantalla estaba "bloqueada" por un error, esto la libera al cambiar de página
+        if (_errorBoundary != null)
+        {
+            _errorBoundary.Recover();
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        // Siempre desvincular eventos para evitar fugas de memoria en WASM
+        Navigation.LocationChanged -= HandleLocationChanged;
+    }
+}

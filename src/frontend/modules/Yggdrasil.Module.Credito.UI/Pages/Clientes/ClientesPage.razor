@@ -1,0 +1,15 @@
+@attribute [Route(PageRoute.ClientesPage)]
+@attribute [AccessPoint(AppMenu.MenuOperacion, "Clientes")]
+@using Yggdrasil.Module.Credito.UI.Pages.Clientes.Components
+
+<PageHeader Title="Clientes" Icon="@AppMenu.MenuOperacionIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+<ClienteList />
+@code {
+    private List<BreadcrumbItem> _items = new()
+    {
+        new BreadcrumbItem("Clientes", href: null, icon: AppMenu.MenuOperacionIcon, disabled: true)
+    };
+}

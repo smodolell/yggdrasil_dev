@@ -1,0 +1,131 @@
+﻿@attribute [SeccionPersona(SeccionPersonaConstants.INFORMACION_DOMICILIO, SeccionPersonaConstants.INFORMACION_DOMICILIO_LABEL)]
+@implements ISeccionPersonaCreate
+@using Yggdrasil.Module.Credito.UI.Services.Clientes
+@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
+@using Yggdrasil.Module.Credito.UI.Services.SelectLists
+@inject IClientesApi _clienteService;
+@inject ISelectListsApi _selectListService;
+<EditForm Model="_model" @ref="_editForm" id="MyID">
+    <FluentValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="2">
+            <MudSelect Margin="Margin.Dense" T="int?" @bind-Value="_model.TipoDomicilioId" For="@(() => _model.TipoDomicilioId)" Label="Tipo Domicilio" Variant="Variant.Outlined">
+                @if (_listTipoDomicilio != null)
+                {
+                    @foreach (var item in _listTipoDomicilio)
+                    {
+                        <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="_model.Calle"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Calle"
+                          For="@(() => _model.Calle)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudTextField @bind-Value="_model.Numero"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Numero"
+                          For="@(() => _model.Numero)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudTextField @bind-Value="_model.Piso"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Piso"
+                          For="@(() => _model.Piso)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="_model.EntreCalles"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Entre Calle"
+                          For="@(() => _model.EntreCalles)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="_model.YCalle"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Y Calle"
+                          For="@(() => _model.YCalle)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12">
+            <SelectColonia ColoniaId="_model.ColoniaId" OnColoniaSelected="OnColoniaSelected" />
+        </MudItem>
+
+    </MudGrid>
+
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public EventCallback<(int, bool)> OnValidationChanged { get; set; }
+
+    private DomicilioEditDto _model = new DomicilioEditDto();
+    private List<SelectListItemDto>? _listTipoDomicilio;
+    private EditForm? _editForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (_listTipoDomicilio == null)
+        {
+            var result = await _selectListService.GetTiposDomicilioAsync();
+            _listTipoDomicilio = result.Data;
+        }
+
+    }
+    public async Task<Result> Create(int personaId)
+    {
+        _model.PersonaId = personaId;
+        var result = await _clienteService.CreateDomicilio(personaId,_model);
+        return Result.Success();
+    }
+
+
+
+    public async Task ValidateAsync()
+    {
+        var editContext = _editForm?.EditContext;
+
+        if (editContext != null)
+        {
+            bool isValid = await editContext.ValidateAsync();
+
+            if (OnValidationChanged.HasDelegate)
+            {
+                await OnValidationChanged.InvokeAsync((SeccionPersonaConstants.INFORMACION_DOMICILIO, isValid));
+            }
+
+        }
+        // if (await _fluentValidationValidator!.ValidateAsync())
+        // {
+        //     if (OnValidationChanged.HasDelegate)
+        //     {
+        //         await OnValidationChanged.InvokeAsync((SeccionPersonaConstants.INFORMACION_DOMICILIO, true));
+        //     }
+        //     StateHasChanged();
+
+        // }
+    }
+    private void OnColoniaSelected(int value)
+    {
+        if (value != 0)
+        {
+            _model.ColoniaId = value;
+        }
+        StateHasChanged();
+
+    }
+}

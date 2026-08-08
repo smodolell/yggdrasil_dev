@@ -1,0 +1,165 @@
+﻿@attribute [Route(PageRoute.ClienteEdit + "/{PersonaId:int}")]
+@attribute [AccessPoint(AppMenu.MenuOperacion, "Editar Cliente",AccessPointType.Page)]
+@using Yggdrasil.Module.Credito.UI.Services.Clientes
+@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
+@using Yggdrasil.Module.Credito.UI.Helpers
+@inject IClientesApi _clienteService
+<PageHeader Title="Editar Cliente" Icon="@AppMenu.MenuOperacionIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+
+
+<MudTabs Elevation="0" Rounded="true" Outlined="true" Border="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+    @if (_perfil != null)
+    {
+        <MudTabPanel Text="@_perfil.NomPerfil">
+            @if (_componentes != null)
+            {
+                @foreach (var item in _componentes)
+                {
+                    <MudCard Outlined="true" Class="mb-1">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <div class="d-flex">
+                                    <MudIcon Icon="@Utils.GetIconByEstatus(item.IsValid)" Color="@Utils.GetColorByEstatus(item.IsValid)" />
+                                    <MudText><strong>@item.NomSeccion</strong></MudText>
+                                </div>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <DynamicComponent Type="item.TypeComponent"
+                                              @ref="item.Ref"
+                                              Parameters="@(new Dictionary<string, object>
+                                              {
+                                                  ["PersonaId"] = PersonaId,
+                                                  ["OnValidationChanged"] = EventCallback.Factory.Create<(int, bool)>(this, HandleValidationChanged)
+                                              })">
+                            </DynamicComponent>
+
+
+                        </MudCardContent>
+                    </MudCard>
+
+                }
+                <MudGrid Class="mt-3">
+                    <MudItem xs="12" sm="12" md="12">
+                        <MudStack Row="true" Justify="Justify.FlexEnd">
+                            <MudButton Variant="Variant.Filled" FullWidth="false"
+                                       Color="Color.Primary"
+                                       Size="Size.Medium"
+                                       ButtonType="ButtonType.Submit"
+                                       StartIcon="@Icons.Material.Filled.Save"
+                                       OnClick="@(()=>Save())">
+                                Guardar
+                            </MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+
+            }
+        </MudTabPanel>
+    }
+
+
+    @if (_componentesExtensions != null)
+    {
+        @foreach (var component in _componentesExtensions)
+        {
+            <MudTabPanel Text="@component.NomSeccion">
+                <DynamicComponent Type="component.TypeComponent"
+                                  @ref="component.Ref"
+                                  Parameters="@(new Dictionary<string, object>
+                                  {
+                                      ["PersonaId"] = PersonaId,
+                                  })">
+                </DynamicComponent>
+            </MudTabPanel>
+        }
+    }
+
+</MudTabs>
+@code {
+    [Parameter]
+    public int PersonaId { get; set; }
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+{
+        new BreadcrumbItem("Clientes", href: ("." + PageRoute.ClientesPage), icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("Editar Cliente", href: null, icon:AppMenu.MenuOperacionIcon,disabled:true)
+    };
+
+    private PerfilDto? _perfil;
+    private List<SeccionPersonaAssemblyDto>? _componentes;
+    private List<SeccionPersonaAssemblyDto>? _componentesExtensions;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (_perfil == null)
+            {
+                var result = await _clienteService.GetPerfilByPersonaIdAsync(PersonaId);
+                _perfil = result.Data!;
+            }
+            var resultSecciones = await _clienteService.GetSeccionesByPerfilIdAsync(_perfil.PerfilId);
+            if (_componentes == null)
+            {
+                
+                var secciones = resultSecciones.Data!.Where(r => r.IsEdit).Select(s => s.SeccionId).ToList();
+                _componentes = SeccionPersonaHelper.GetListSeccionByAssembly(this.GetType().Assembly, secciones);
+            }
+            if (_componentesExtensions == null)
+            {
+                var secciones = resultSecciones.Data!.Where(r => r.IsExtension).Select(s => s.SeccionId).ToList();
+                _componentesExtensions = SeccionPersonaHelper.GetListSeccionByAssembly(this.GetType().Assembly, secciones);
+            }
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex);
+        }
+
+       
+    }
+
+    private async Task Save()
+    {
+        if (_componentes == null) return;
+
+        foreach (var componente in _componentes)
+        {
+            if (componente.Ref?.Instance is ISeccionPersonaEdit seccionEdit)
+            {
+
+                await seccionEdit.ValidateAsync();
+            }
+        }
+
+        var allValid = _componentes.All(a => a.IsValid);
+        if (allValid)
+        {
+            foreach (var componente in _componentes)
+            {
+                if (componente.Ref?.Instance is ISeccionPersonaEdit seccionEdit)
+                {
+                    var resultComponente = await seccionEdit.Save();
+                }
+            }
+            _snackbarService.Add("SE ALMACENADOS", Severity.Success);
+        }
+        else
+        {
+            _snackbarService.Add("VERIFIQUE EL FORMULARIO", Severity.Error);
+        }
+    }
+    private void HandleValidationChanged((int Id, bool IsValid) validationData)
+    {
+        if (_componentes == null) return;
+        var oSeccion = _componentes.FirstOrDefault(r => r.SeccionId == validationData.Id);
+        if (oSeccion != null)
+        {
+            oSeccion.IsValid = validationData.IsValid;
+        }
+
+    }
+}

@@ -1,0 +1,106 @@
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="HandleSubmit" style="width:100%;" id="tasaVariableForm">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="12">
+                    <MudTextField @bind-Value="_model.NomTasa"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Nombre de Tasa Variable"
+                                  For="@(() => _model.NomTasa)" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12">
+                    <MudSwitch @bind-Value="@_model.Activo" Label="Activo" Color="Color.Primary" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="tasaVariableForm">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public int TasaVariableId { get; set; }
+
+    private TasaVariableDto _model = new();
+    private bool _isEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (TasaVariableId > 0)
+        {
+            _isEdit = true;
+            await LoadTasaVariable();
+        }
+    }
+
+    private async Task LoadTasaVariable()
+    {
+        try
+        {
+            var result = await _catalogosApi.GetTasaVariableById(TasaVariableId);
+            if (result.Success && result.Data != null)
+            {
+                _model.NomTasa = result.Data.NomTasa;
+            }
+            else
+            {
+                _snackbarService.Add("No se pudo cargar la tasa variable", Severity.Error);
+                Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add($"Error al cargar: {ex.Message}", Severity.Error);
+            Close();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (!_isEdit)
+            {
+                var result = await _catalogosApi.CreateTasaVariable(_model);
+                _snackbarService.Add("Tasa variable creada correctamente", Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                var result = await _catalogosApi.UpdateTasaVariable(TasaVariableId, _model);
+                _snackbarService.Add("Tasa variable actualizada correctamente", Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
+                
+            }
+        }
+        catch (YggdrasilApiException ex)
+        {
+            await _dialogService.ShowErrorDialog(ex);
+        }
+    }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}

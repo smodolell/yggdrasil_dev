@@ -1,0 +1,192 @@
+﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi;
+
+<MudGrid>
+    <MudItem xs="12" sm="12" md="12">
+        @if (_list == null)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <MudTable Class="mb-4" Items="@_list.Results"
+                      Outlined="true"
+                      Elevation="0"
+                      LoadingProgressColor="Color.Info"
+                      Loading="_loading"
+                      Dense="true"
+                      Bordered="true">
+                <ToolBarContent>
+                    <MudStack Row="true">
+                        <MudTextField @bind-Value="_searchText" OnBlur="@(() => InitialData())" Label="Tasa" Margin="Margin.Dense" Variant="Variant.Text" />
+                        <MudNumericField @bind-Value="_valMin" OnBlur="@(() => InitialData())" Label="Valor(Min)" Margin="Margin.Dense" Variant="Variant.Text" Min="0" Max="200" />
+                        <MudNumericField @bind-Value="_valMax" OnBlur="@(() => InitialData())" Label="Valor(Max)" Margin="Margin.Dense" Variant="Variant.Text" Min="0" Max="200" />
+                    </MudStack>
+
+                    <MudSpacer></MudSpacer>
+                    <MudStack Row="true" AlignItems="AlignItems.End">
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => AddClick())" Color="Color.Primary">Agregar</MudButton>
+                    </MudStack>
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width:60%" />
+                    <col style="width:20%" />
+                    <col style="width:10%" />
+                    <col style="width:10%" />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh>Tasa</MudTh>
+                    <MudTh>Valor</MudTh>
+                    <MudTh>Activa</MudTh>
+                    <MudTh>Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Tasa">@context.NomTasa</MudTd>
+                    <MudTd DataLabel="Valor">@context.ValorTasa.ToString("F2")</MudTd>
+                    <MudTd DataLabel="¿Activo?">
+                        <MudSwitch Value="@context.Activo" T="bool" Size="Size.Small"
+                                   ValueChanged="v => ChangeActivo(context.Id,v)" Color="Color.Primary">
+                        </MudSwitch>
+                    </MudTd>
+                    <MudTd DataLabel="Acciones">
+                        <MudStack Row="true" Justify="Justify.Center">
+                            <MudIconButton Size="@MudBlazor.Size.Small"
+                                           Icon="@Icons.Material.Outlined.Edit"
+                                           Color="Color.Primary"
+                                           OnClick="() => EditClick(context.Id)" />
+                            <MudIconButton Size="@MudBlazor.Size.Small"
+                                           Icon="@Icons.Material.Outlined.Delete"
+                                           Color="Color.Error"
+                                           OnClick="() => DeleteClick(context)" />
+                        </MudStack>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText>No hay registros de <strong>Tasa</strong></MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudDataGridPager T="TasaListItemDto" />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudItem>
+</MudGrid>
+
+@code {
+    private int _pageNumber = 1;
+    private int _pageSize = 10;
+    private int _totalCount = 0;
+    private bool _loading;
+    private decimal? _valMin;
+    private decimal? _valMax;
+    private string? _searchText;
+    private PagedResultDto<TasaListItemDto>? _list;
+    private DialogOptions _optionsDialogs = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_list == null)
+        {
+            await InitialData();
+        }
+    }
+
+    private async Task InitialData()
+    {
+        _loading = true;
+        var result = await _catalogosApi.GetTasas(
+            _valMin,
+            _valMax,
+            _searchText,
+            _pageNumber,
+            _pageSize,
+            nameof(TasaListItemDto.NomTasa),
+            false
+        );
+        _list = result.Data;
+        _loading = false;
+        _totalCount = _list!.TotalCount;
+        StateHasChanged();
+    }
+
+    private async Task AddClick()
+    {
+        var parameters = new DialogParameters { };
+        var dialog = await _dialogService.ShowAsync<TasaFormDialog>("Agregar Tasa", parameters, _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await InitialData();
+        }
+    }
+
+    private async Task EditClick(int id)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(TasaFormDialog.TasaId), id }
+        };
+        var dialog = await _dialogService.ShowAsync<TasaFormDialog>("Editar Tasa", parameters, _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled && result.Data is true)
+        {
+            await InitialData();
+        }
+    }
+
+    private async Task DeleteClick(TasaListItemDto item)
+    {
+        await _dialogService.ShowConfirmDialog($"¿Desea eliminar la tasa {item.NomTasa}?", "Eliminar", async (e) =>
+        {
+            try
+            {
+                var result = await _catalogosApi.DeleteTasa(item.Id);
+                if (result.Success)
+                {
+                    _snackbarService.Add(result.Message, Severity.Success);
+                    await InitialData();
+                }
+                else
+                {
+                    _snackbarService.Add(result.Errors?.FirstOrDefault() ?? "Error al eliminar", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                _snackbarService.Add(ex.Message, Severity.Error);
+            }
+        });
+    }
+
+    private async Task ChangeActivo(int id, bool active)
+    {
+        var result = await _catalogosApi.ChangeActiveTasa(id, new ChangeActiveTasaDto
+        {
+            Active = active
+        });
+        if (result.Success)
+        {
+            _snackbarService.Add(result.Message, Severity.Success);
+            if (_list != null)
+            {
+                var item = _list.Results.FirstOrDefault(u => u.Id == id);
+                if (item != null)
+                {
+                    item.Activo = active;
+                }
+            }
+        }
+        else
+        {
+            _snackbarService.Add(result.Errors?.FirstOrDefault() ?? "Error", Severity.Error);
+        }
+        StateHasChanged();
+    }
+
+    private async void PageChangedClick(int page)
+    {
+        _pageNumber = page;
+        await InitialData();
+    }
+}

@@ -1,0 +1,150 @@
+﻿@attribute [SeccionPersona(SeccionPersonaConstants.CUENTA_BANCARIA_NEW, SeccionPersonaConstants.CUENTA_BANCARIA_NEW_LABEL)]
+@implements ISeccionPersonaCreate
+@using Yggdrasil.Module.Credito.UI.Services.Clientes
+@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
+@using Yggdrasil.Module.Credito.UI.Services.SelectLists
+@inject IClientesApi _clienteService;
+@inject ISelectListsApi _selectListService;
+
+<EditForm Model="@_model" @ref="_editForm">
+    <FluentValidator AsyncMode="true" />
+    <ValidationSummary></ValidationSummary>
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="6">
+            <MudSelect Margin="Margin.Dense" T="int?"
+                       @bind-Value="_model.TipoCuentaBancariaId"
+                       For="@(() => _model.TipoCuentaBancariaId)"
+                       Label="Tipo de cuenta" Variant="Variant.Outlined">
+                @if (_listTipoCuentaBancaria != null)
+                {
+                    @foreach (var item in _listTipoCuentaBancaria)
+                    {
+                        <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="_model.NroCuentaBancaria"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Número de cuenta"
+                          HelperText="(CBU o Nº de cuenta interna)"
+                          MaxLength="20"
+                          For="@(() => _model.NroCuentaBancaria)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="_model.AliasCBU"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Alias CBU"
+                          HelperText="(opcional, para transferencias más rápidas)"
+                          For="@(() => _model.AliasCBU)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="_model.CBU"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="CBU (Clave Bancaria Uniforme)"
+                          MaxLength="22"
+                          For="@(() => _model.CBU)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6">
+            <MudSelect Margin="Margin.Dense" T="int?" @bind-Value="_model.BancoId" For="@(() => _model.BancoId)" Label="Bamco" Variant="Variant.Outlined">
+                @if (_listBanco != null)
+                {
+                    @foreach (var item in _listBanco)
+                    {
+                        <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="6">
+            <MudSelect Margin="Margin.Dense" T="int?" @bind-Value="_model.MonedaId" For="@(() => _model.MonedaId)" Label="Moneda" Variant="Variant.Outlined">
+                @if (_listMoneda != null)
+                {
+                    @foreach (var item in _listMoneda)
+                    {
+                        <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+
+
+</EditForm>
+
+@code
+{
+
+    [Parameter]
+    public EventCallback<(int, bool)> OnValidationChanged { get; set; }
+
+    private CuentaBancariaEditDto _model = new CuentaBancariaEditDto();
+
+    private List<SelectListItemDto>? _listBanco;
+    private List<SelectListItemDto>? _listTipoCuentaBancaria;
+    private List<SelectListItemDto>? _listMoneda;
+    private EditForm? _editForm;
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (_listTipoCuentaBancaria == null)
+        {
+            var result = await _selectListService.GetTiposCuentaBancariaAsync();
+            _listTipoCuentaBancaria = result.Data;
+        }
+        if (_listBanco == null)
+        {
+            var result = await _selectListService.GetBancosAsync();
+            _listBanco = result.Data;
+        }
+        if (_listMoneda == null)
+        {
+            var result = await _selectListService.GetMonedasAsync();
+            _listMoneda = result.Data;
+        }
+
+
+    }
+
+    public async Task<Result> Create(int personaId)
+    {
+        _model.PersonaId = personaId;
+        var result = await _clienteService.CreateCuentaBancaria(personaId, _model);
+        return Result.Success();
+    }
+
+
+
+    public async Task ValidateAsync()
+    {
+        // 1. Obtenemos el EditContext desde la referencia del EditForm
+        var editContext = _editForm?.EditContext;
+
+        if (editContext != null)
+        {
+            // 2. Usamos el método de extensión de Blazilla
+            // Este método hace 3 cosas:
+            // - Dispara la validación síncrona.
+            // - Espera las reglas MustAsync.
+            // - Retorna true solo si todo pasó.
+            bool isValid = await editContext.ValidateAsync();
+
+            if (OnValidationChanged.HasDelegate)
+            {
+                await OnValidationChanged.InvokeAsync((SeccionPersonaConstants.CUENTA_BANCARIA_NEW, isValid));
+            }
+
+        }
+
+    }
+
+
+}

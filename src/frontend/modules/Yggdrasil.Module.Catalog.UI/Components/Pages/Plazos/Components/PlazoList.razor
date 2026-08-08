@@ -1,0 +1,95 @@
+﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi;
+<MudDataGrid Outlined="true"
+             Dense="true"
+             Bordered="true"
+             ServerData="GetTableData"
+             FixedHeader="true"
+             @ref="dataGridRef"
+             T="PlazoListItemDto">
+    <ToolBarContent>
+        <MudSpacer></MudSpacer>
+        <div style="width:300px">
+            <MudNumericField T="int?" @bind-Value="@_valorPlazo" Margin="Margin.Dense" Placeholder="Buscar.."> </MudNumericField>
+        </div>
+        <MudIconButton Size="MudBlazor.Size.Medium"
+                       Icon="@Icons.Material.Filled.Search"
+                       OnClick="()=>dataGridRef.ReloadServerData()"
+                       Variant="Variant.Text"
+                       Color="Color.Primary">
+        </MudIconButton>
+        <MudStack Row="true" AlignItems="AlignItems.End">
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => AddClick())" Color="Color.Primary">Agregar</MudButton>
+        </MudStack>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Title="Plazo" Property="x => x.ValorPlazo" />
+        <TemplateColumn HeaderStyle="white-space:nowrap;width:50px;" StickyRight="true" Resizable="false" Title="Activo">
+            <CellTemplate>
+                <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
+                    <MudSwitch Value="@context.Item.Activo" T="bool"
+                               ValueChanged="v => ChangeActivo(context.Item.ValorPlazo,v)" Size="Size.Small" Color="Color.Primary">
+                    </MudSwitch>
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
+
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="PlazoListItemDto" />
+    </PagerContent>
+    <NoRecordsContent>
+        <MudText>No hay registros de <strong>Plazos</strong></MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+
+@code {
+
+    private int? _valorPlazo;
+    private bool? _activo;
+    private MudDataGrid<PlazoListItemDto> dataGridRef = null!;
+
+    private async Task<GridData<PlazoListItemDto>> GetTableData(GridState<PlazoListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        var _pageNumber = (gridState.Page + 1);
+        var paginatedList = await _catalogosApi.GetPlazos(
+            _valorPlazo,
+            _activo,
+            _pageNumber,
+            gridState.PageSize
+        );
+        return new GridData<PlazoListItemDto>()
+        {
+            TotalItems = paginatedList.Data!.TotalCount,
+            Items = paginatedList.Data!.Results
+        };
+    }
+
+    private async Task AddClick()
+    {
+        var parameters = new DialogParameters { };
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await _dialogService.ShowAsync<PlazoFormDialog>("Agregar Plazo", parameters, options);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+
+    }
+
+    private async Task ChangeActivo(int id, bool active)
+    {
+        // var result = await _catalogosApi.ChangeActivo(id, active);
+        // if (result.IsSuccess)
+        // {
+        //     await dataGridRef.ReloadServerData();
+        // }
+        // else
+        // {
+        //     _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
+        // }
+    }
+}

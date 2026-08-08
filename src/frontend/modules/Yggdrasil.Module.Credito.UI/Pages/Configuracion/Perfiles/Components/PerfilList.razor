@@ -1,0 +1,100 @@
+﻿@using Yggdrasil.Module.Credito.UI.Services.Configuacion
+@using Yggdrasil.Module.Credito.UI.Services.Configuacion.DTOs
+@inject IConfiguracionApi _configuracionApi;
+
+<MudDataGrid Outlined="true"
+             Dense="true"
+             Bordered="true"
+             ServerData="GetTableData"
+             FixedHeader="true"
+             @ref="dataGridRef"
+             T="PerfilListItemDto">
+    <ToolBarContent>
+        <MudSpacer></MudSpacer>
+        <div style="width:300px">
+            <MudTextField T="string" @bind-Value="@_searchText" Margin="Margin.Dense" Placeholder="Buscar.."></MudTextField>
+        </div>
+        <MudIconButton Size="MudBlazor.Size.Medium"
+                       Icon="@Icons.Material.Filled.Search"
+                       OnClick="()=>dataGridRef.ReloadServerData()"
+                       Variant="Variant.Text"
+                       Color="Color.Primary">
+        </MudIconButton>
+        <MudStack Row="true" AlignItems="AlignItems.End">
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => AddClick())" Color="Color.Primary">Agregar</MudButton>
+        </MudStack>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Title="Perfil" Property="x => x.NomPerfil" />
+        <TemplateColumn HeaderStyle="white-space:nowrap;width:50px;" StickyRight="true" Resizable="false" Title="Acciones">
+            <CellTemplate>
+                <MudStack Row="true" Justify="Justify.FlexEnd">
+                    <MudIconButton Size="@MudBlazor.Size.Small"
+                                   Icon="@Icons.Material.Outlined.Edit"
+                                   Color="Color.Primary"
+                                   OnClick="()=>EditClick(context.Item.Id)" />
+                    <MudIconButton Size="@MudBlazor.Size.Small"
+                                   Icon="@Icons.Material.Outlined.Delete"
+                                   Color="Color.Error"
+                                   OnClick="()=>DeleteClick(context.Item)" />
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="PerfilListItemDto" />
+    </PagerContent>
+    <NoRecordsContent>
+        <MudText>No hay registros de <strong>Perfiles</strong></MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+@code {
+    private string? _searchText;
+    private MudDataGrid<PerfilListItemDto> dataGridRef = null!;
+    private DialogOptions _optionsDialogs = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    private async Task<GridData<PerfilListItemDto>> GetTableData(GridState<PerfilListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        var _pageNumber = (gridState.Page + 1);
+        var paginatedList = await _configuracionApi.GetPerfiles(
+            _searchText,
+            _pageNumber,
+            gridState.PageSize
+        );
+        return new GridData<PerfilListItemDto>()
+        {
+            TotalItems = paginatedList.Data!.TotalCount,
+            Items = paginatedList.Data!.Results
+        };
+    }
+
+    private void AddClick()
+    {
+        _navManager.NavigateTo("." + PageRoute.PerfilEdit);
+    }
+
+    private void EditClick(int id)
+    {
+        _navManager.NavigateTo("." + PageRoute.PerfilEdit + $"/{id}");
+    }
+
+    private async Task DeleteClick(PerfilListItemDto item)
+    {
+        await _dialogService.ShowConfirmDialog($"¿Desea eliminar el  {item.NomPerfil}?", "Eliminar", async (e) =>
+        {
+            try
+            {
+                var result = await _configuracionApi.DeletePerfil(item.Id);
+                await dataGridRef.ReloadServerData();
+                _snackbarService.Add(result.Message, Severity.Success);
+                
+            }
+            catch (YggdrasilApiException ex)
+            {
+                _snackbarService.Add(ex.Message, Severity.Error);
+            }
+        });
+    }
+}
+

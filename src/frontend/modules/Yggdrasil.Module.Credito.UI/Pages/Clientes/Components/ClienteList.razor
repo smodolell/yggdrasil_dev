@@ -1,0 +1,366 @@
+@using Yggdrasil.Module.Credito.UI.Services.Clientes
+@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
+@using Yggdrasil.Module.Credito.UI.Services.SelectLists
+@inject IClientesApi _clientesApi
+@inject ISelectListsApi _selectListService
+@inject IDialogService _dialogService
+@inject ISnackbar _snackbarService
+@inject NavigationManager _navManager
+
+<MudDrawer @bind-Open="@_openFilter"
+           Fixed="false"
+           Width="360px"
+           Anchor="Anchor.Right"
+           Elevation="0"
+           Variant="@DrawerVariant.Temporary"
+           Style="border-left: 1px solid var(--mud-palette-lines-default);">
+    <MudDrawerHeader Class="align-center justify-space-between border-b pa-4">
+        <MudText Typo="Typo.subtitle1" Class="mud-text-primary font-weight-bold">Filtros Avanzados</MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="() => _openFilter = false" />
+    </MudDrawerHeader>
+
+    <MudDrawerContainer>
+        <MudGrid Spacing="3" Class="pa-4">
+            <MudItem xs="12">
+                <MudSelect T="int?"
+                           @bind-Value="_perfilId"
+                           Margin="Margin.Dense"
+                           Variant="Variant.Outlined"
+                           Label="Perfil de Cliente"
+                           Clearable="true">
+                    @if (_listPerfiles != null)
+                    {
+                        @foreach (var item in _listPerfiles)
+                        {
+                            <MudSelectItem T="int?" Value="@item.PerfilId">@item.NomPerfil</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSelect T="int?"
+                           @bind-Value="_generoId"
+                           Margin="Margin.Dense"
+                           Variant="Variant.Outlined"
+                           Label="Género"
+                           Clearable="true">
+                    @if (_listGeneros != null)
+                    {
+                        @foreach (var item in _listGeneros)
+                        {
+                            <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSelect T="int?"
+                           @bind-Value="_edoCivilId"
+                           Margin="Margin.Dense"
+                           Variant="Variant.Outlined"
+                           Label="Estado Civil"
+                           Clearable="true">
+                    @if (_listEdosCiviles != null)
+                    {
+                        @foreach (var item in _listEdosCiviles)
+                        {
+                            <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Agrupador de Fechas movido aquí para limpiar la barra principal -->
+            <MudItem xs="12">
+                <MudDateRangePicker @bind-DateRange="_dateRange"
+                                    Label="Fecha de Alta (Rango)"
+                                    Margin="Margin.Dense"
+                                    Variant="Variant.Outlined"
+                                    Clearable="true" />
+            </MudItem>
+
+            <!-- Acciones del Filtro: Limpiar izquierda, Filtrar derecha (Estándar UI) -->
+            <MudItem xs="12" Class="d-flex justify-space-between mt-4">
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Default"
+                           StartIcon="@Icons.Material.Outlined.ClearAll"
+                           OnClick="OnClearFilter"
+                           Disabled="_loading">
+                    Limpiar
+                </MudButton>
+                <div class="d-flex gap-2">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               OnClick="OnCancelFilter">
+                        Cancelar
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Outlined.FilterAlt"
+                               OnClick="ApplyFilters"
+                               Disabled="_loading">
+                        Aplicar
+                    </MudButton>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudDrawerContainer>
+</MudDrawer>
+
+<!-- Contenedor Principal de Datos (Look & Feel "Flat" de Mercado) -->
+<MudCard Outlined="true" Elevation="0" Class="border-none bg-transparent">
+    <MudDataGrid @ref="dataGridRef"
+                 T="PersonaListItemDto"
+                 ServerData="GetTableData"
+                 Dense="true"
+                 Outlined="true"
+                 Bordered="false"
+                 FixedHeader="true"
+                 SortMode="SortMode.Single"
+                 Loading="_loading"
+                 Class="mud-elevation-0 border rounded-lg overflow-hidden">
+
+        <ToolBarContent>
+            <!-- Buscador unificado a la izquierda -->
+            <div style="width: 100%; max-width: 400px;">
+                <MudTextField T="string"
+                              Value="_searchText"
+                              ValueChanged="OnSearch"
+                              Placeholder="Buscar por ID, nombre, CUIT..."
+                              Adornment="Adornment.Start"
+                              Clearable="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              AdornmentIcon="@Icons.Material.Outlined.Search"
+                              IconSize="Size.Small">
+                </MudTextField>
+            </div>
+
+            <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
+                           Class="ms-2"
+                           Color="@(_hasActiveFilters ? Color.Primary : Color.Default)"
+                           Size="Size.Medium"
+                           OnClick="OnFilterClicked" />
+
+            <MudSpacer />
+
+            <!-- Acciones de la tabla unificadas a la derecha -->
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudTooltip Text="Actualizar Datos">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh"
+                                   Size="Size.Small"
+                                   Color="Color.Default"
+                                   OnClick="RefreshData"
+                                   Disabled="_loading" />
+                </MudTooltip>
+                <MudButton Variant="Variant.Filled"
+                           Size="Size.Small"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Outlined.Add"
+                           OnClick="AddClick"
+                           Disabled="_loading">
+                    Nuevo Cliente
+                </MudButton>
+            </MudStack>
+        </ToolBarContent>
+
+        <Columns>
+            <!-- Alineaciones y anchos optimizados para legibilidad corporativa -->
+            <PropertyColumn Title="Cliente / Razón Social" Property="x => x.NombreCliente" SortBy="x => x.NombreCliente" />
+            <PropertyColumn Title="RFC" Property="x => x.RFC" HeaderStyle="width:130px;" Class="font-monospace" />
+            <PropertyColumn Title="CURP" Property="x => x.CURP" HeaderStyle="width:150px;" Class="font-monospace" />
+            <PropertyColumn Title="Perfil Financiero" Property="x => x.NomPerfil" HeaderStyle="width:180px;" />
+            <TemplateColumn Title="Fecha Alta" HeaderStyle="width:140px; text-align: center;" CellClass="text-center" SortBy="x => x.FechaAltaCliente">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@context.Item.FechaAltaCliente.ToString("dd/MM/yyyy")</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn HeaderStyle="width:100px; text-align: right;" StickyRight="true" Resizable="false" Title="Acciones">
+                <CellTemplate>
+                    <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="0">
+                        <MudIconButton Size="Size.Small"
+                                       Icon="@Icons.Material.Outlined.Edit"
+                                       Color="Color.Default"
+                                       OnClick="() => EditClick(context.Item.Id)" />
+                        <MudIconButton Size="Size.Small"
+                                       Icon="@Icons.Material.Outlined.Delete"
+                                       Color="Color.Error"
+                                       OnClick="() => DeleteClick(context.Item)" />
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="PersonaListItemDto" RowsPerPageString="Filas por página:" />
+        </PagerContent>
+
+        <NoRecordsContent>
+            <div class="pa-8 text-center">
+                <MudText Typo="Typo.body1" Class="mud-text-secondary">No se encontraron registros de <strong>Clientes</strong></MudText>
+            </div>
+        </NoRecordsContent>
+    </MudDataGrid>
+</MudCard>
+
+@code {
+    private string? _searchText;
+    private int? _perfilId;
+    private int? _generoId;
+    private int? _edoCivilId;
+    private bool _loading = false;
+    private bool _openFilter;
+    private DateRange _dateRange = new();
+
+    // Estados de respaldo para permitir la cancelación limpia del Drawer
+    private int? _origPerfilId;
+    private int? _origGeneroId;
+    private int? _origEdoCivilId;
+    private DateRange _origDateRange = new();
+
+    private List<PerfilDto>? _listPerfiles;
+    private List<SelectListItemDto>? _listGeneros;
+    private List<SelectListItemDto>? _listEdosCiviles;
+
+    private MudDataGrid<PersonaListItemDto> dataGridRef = null!;
+
+    private bool _hasActiveFilters => _perfilId.HasValue || _generoId.HasValue || _edoCivilId.HasValue || _dateRange.Start.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        try
+        {
+            var perfilesTask = _clientesApi.GetPerfilesActivosAsync();
+            var generosTask = _selectListService.GetGenerosAsync();
+            var edosCivilesTask = _selectListService.GetEstadosCivilesAsync();
+
+            await Task.WhenAll(perfilesTask, generosTask, edosCivilesTask);
+
+            _listPerfiles = perfilesTask.Result?.Data;
+            _listGeneros = generosTask.Result?.Data;
+            _listEdosCiviles = edosCivilesTask.Result?.Data;
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar clientes");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task<GridData<PersonaListItemDto>> GetTableData(GridState<PersonaListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        _loading = true;
+        try
+        {
+            var sortDef = gridState.SortDefinitions.FirstOrDefault();
+            var sortColumn = sortDef?.SortBy ?? nameof(PersonaListItemDto.FechaAltaCliente);
+            var sortDesc = sortDef?.Descending ?? true;
+
+            var result = await _clientesApi.GetClientes(
+                q: _searchText,
+                page: gridState.Page + 1,
+                pageSize: gridState.PageSize,
+                sortColumn: sortColumn,
+                sortDesc: sortDesc,
+                perfilId: _perfilId,
+                generoId: _generoId,
+                edoCivilId: _edoCivilId,
+                fechaAltaClienteStart: _dateRange.Start?.Date,
+                fechaAltaClienteEnd: _dateRange.End?.Date.AddDays(1).AddSeconds(-1)
+            );
+
+            return new GridData<PersonaListItemDto>
+            {
+                TotalItems = result.Data?.TotalCount ?? 0,
+                Items = result.Data!.Results ?? new List<PersonaListItemDto>()
+            };
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar clientes");
+            return new GridData<PersonaListItemDto> { Items = Array.Empty<PersonaListItemDto>(), TotalItems = 0 };
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void AddClick() => _navManager.NavigateTo("." + PageRoute.ClienteNew);
+
+    private void EditClick(int id) => _navManager.NavigateTo("." + PageRoute.ClienteEdit + $"/{id}");
+
+    private async Task DeleteClick(PersonaListItemDto item)
+    {
+        await _dialogService.ShowConfirmDialog(
+            $"¿Desea eliminar al cliente {item.NombreCliente}?",
+            "Eliminar Cliente",
+            async (e) =>
+            {
+                try
+                {
+                    var result = await _clientesApi.DeletePersona(item.Id);
+                    await RefreshData();
+                    _snackbarService.Add(result.Content?.Message ?? "Cliente eliminado", Severity.Success);
+                }
+                catch (Exception ex)
+                {
+                    await _dialogService.ShowErrorDialog(ex, "Error al cargar clientes");
+                }
+            });
+    }
+
+    private async Task RefreshData()
+    {
+        if (dataGridRef != null) await dataGridRef.ReloadServerData();
+    }
+
+    private async Task OnSearch(string? text)
+    {
+        _searchText = text;
+        await RefreshData();
+    }
+
+    private void OnFilterClicked()
+    {
+        // Guardar estado original antes de abrir por si cancelan
+        _origPerfilId = _perfilId;
+        _origGeneroId = _generoId;
+        _origEdoCivilId = _edoCivilId;
+        _origDateRange = _dateRange;
+        _openFilter = true;
+    }
+
+    private async Task ApplyFilters()
+    {
+        _openFilter = false;
+        await RefreshData();
+    }
+
+    private async Task OnClearFilter()
+    {
+        _perfilId = null;
+        _generoId = null;
+        _edoCivilId = null;
+        _dateRange = new DateRange();
+        _openFilter = false;
+        await RefreshData();
+    }
+
+    private void OnCancelFilter()
+    {
+        // Revertir a los valores iniciales previos a la edición
+        _perfilId = _origPerfilId;
+        _generoId = _origGeneroId;
+        _edoCivilId = _origEdoCivilId;
+        _dateRange = _origDateRange;
+        _openFilter = false;
+    }
+}

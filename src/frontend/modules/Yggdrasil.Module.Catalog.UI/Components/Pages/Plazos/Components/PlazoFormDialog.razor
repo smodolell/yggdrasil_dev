@@ -1,0 +1,70 @@
+﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
+@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
+@inject ICatalogosApi _catalogosApi;
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="UpdateSumbit" id="MyID">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem sm="12" md="12">
+                    <MudNumericField @bind-Value="_model.ValorPlazo"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Min="1"
+                                     Label="Valor de Plazo" For="@(() => _model.ValorPlazo)">
+                    </MudNumericField>
+                </MudItem>
+            </MudGrid>
+
+
+
+        </EditForm>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" FullWidth="false"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="MyID">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   FullWidth="false"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+
+    private PlazoEditDto _model = new PlazoEditDto();
+
+
+    private async Task UpdateSumbit()
+    {
+        try
+        {
+            await _catalogosApi.CreatePlazo(_model);
+            _snackbarService.Add("OKAS", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}
+

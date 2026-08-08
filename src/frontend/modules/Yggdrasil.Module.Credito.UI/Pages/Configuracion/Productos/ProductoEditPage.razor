@@ -1,0 +1,30 @@
+@attribute [Route(PageRoute.ProductoEdit + "/{ProductoId:int}")]
+@attribute [AccessPoint(AppMenu.MenuConfiguracion, "Editar Producto", AccessPointType.Page)]
+@using Yggdrasil.Module.Credito.UI.Pages.Configuracion.Productos.Components
+
+<PageHeader Title="Producto"
+            Icon="@AppMenu.MenuConfiguracionIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+<MudTabs Elevation="2" Rounded="true" Class="mt-4">
+    <MudTabPanel Text="General" Icon="@Icons.Material.Filled.Edit">
+        <ProductoForm ProductoId="@ProductoId" />
+    </MudTabPanel>
+    <MudTabPanel Text="Cargos Iniciales" Icon="@Icons.Material.Filled.AttachMoney">
+        <CargoInicialList ProductoId="@ProductoId" />
+    </MudTabPanel>
+    <MudTabPanel Text="Conceptos Financiados" Icon="@Icons.Material.Filled.AccountBalance">
+        <ConceptoFinanciadoList ProductoId="@ProductoId" />
+    </MudTabPanel>
+</MudTabs>
+
+
+@code {
+    [Parameter] public int ProductoId { get; set; }
+
+    private List<BreadcrumbItem> _items = new()
+    {
+        new BreadcrumbItem("Productos", href: PageRoute.ProductosPage),
+        new BreadcrumbItem("Editar Producto", href: null, disabled: true)
+    };
+}
