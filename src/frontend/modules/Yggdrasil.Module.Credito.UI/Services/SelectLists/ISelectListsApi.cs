@@ -5,7 +5,7 @@ public interface ISelectListsApi
     /// <summary>
     /// Obtiene lista de Bancos
     /// </summary>
-    [Get("/api/fi-select-lists/bancos")]
+    [Get("/api/cat-select-lists/bancos")]
     Task<ApiResponseDto<List<SelectListItemDto>>> GetBancosAsync(
         [Query] string? searchTerm = null,
         [Query] int? maxResults = null,
@@ -20,14 +20,14 @@ public interface ISelectListsApi
         [Query] int? maxResults = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Obtiene lista de Tipos de Cuenta Bancaria
-    /// </summary>
-    [Get("/api/fi-select-lists/tipos-cuenta-bancaria")]
-    Task<ApiResponseDto<List<SelectListItemDto>>> GetTiposCuentaBancariaAsync(
-        [Query] string? searchTerm = null,
-        [Query] int? maxResults = null,
-        CancellationToken cancellationToken = default);
+    ///// <summary>
+    ///// Obtiene lista de Tipos de Cuenta Bancaria
+    ///// </summary>
+    //[Get("/api/fi-select-lists/tipos-cuenta-bancaria")]
+    //Task<ApiResponseDto<List<SelectListItemDto>>> GetTiposCuentaBancariaAsync(
+    //    [Query] string? searchTerm = null,
+    //    [Query] int? maxResults = null,
+    //    CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Obtiene lista de Tipos de Domicilio

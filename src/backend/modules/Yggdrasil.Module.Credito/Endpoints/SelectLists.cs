@@ -28,7 +28,7 @@ public class SelectLists : EndpointGroupBase
         //    .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("monedas", GetMonedaSelectList)
-            .WithName("CF_GetMonedaSelectList")
+            .WithName("FI_GetMonedaSelectList")
             .WithSummary("Obtiene Monedas")
             .WithDescription("Retorna una lista de Monedas")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
@@ -55,7 +55,7 @@ public class SelectLists : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("tipos-persona", GetTipoPersonaSelectList)
-            .WithName("CF_GetTipoPersonaSelectList")
+            .WithName("FI_GetTipoPersonaSelectList")
             .WithSummary("Obtiene Tipos de Persona")
             .WithDescription("Retorna una lista de Tipos de Persona")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
@@ -64,7 +64,7 @@ public class SelectLists : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("estados-civiles", GetEdoCivilSelectList)
-            .WithName("CF_GetEdoCivilSelectList")
+            .WithName("FI_GetEdoCivilSelectList")
             .WithSummary("Obtiene Estados Civiles")
             .WithDescription("Retorna una lista de Estados Civiles")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)

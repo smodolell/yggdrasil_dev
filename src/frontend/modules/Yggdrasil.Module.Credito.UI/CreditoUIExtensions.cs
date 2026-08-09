@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Yggdrasil.Blazor.Extensions;
 using Yggdrasil.Module.Credito.UI.Services.Clientes;
 using Yggdrasil.Module.Credito.UI.Services.Configuacion;
+using Yggdrasil.Module.Credito.UI.Services.Creditos;
 using Yggdrasil.Module.Credito.UI.Services.SelectLists;
 using Yggdrasil.Module.Credito.UI.Services.Sync;
 
@@ -20,7 +21,7 @@ public static class CreditoUIExtensions
         services.AddYggdrasilModule<CreditoUIModule, IConfiguracionApi>(apiUri);
         services.AddYggdrasilModule<CreditoUIModule, ISelectListsApi>(apiUri);
         //services.AddYggdrasilModule<CreditoUIModule, ISearchesApi>(apiUri);
-        //services.AddYggdrasilModule<CreditoUIModule, ICreditosApi>(apiUri);
+        services.AddYggdrasilModule<CreditoUIModule, ICreditosApi>(apiUri);
         //services.AddYggdrasilModule<CreditoUIModule, IProcesosApi>(apiUri);
         //services.AddYggdrasilModule<CreditoUIModule, ICobranzaApi>(apiUri);
 

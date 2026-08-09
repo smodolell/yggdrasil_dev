@@ -1,0 +1,55 @@
+@using Yggdrasil.Module.Credito.UI.Services.Clientes
+@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
+@inject IClientesApi _clientesApi
+
+<MudGrid>
+    <MudItem xs="12" sm="12" md="12">
+        <MudAutocomplete T="PersonaListItemDto"
+                         Variant="Variant.Outlined"
+                         Label="Cliente"
+                         Margin="Margin.Dense"
+                         Value="_clienteSelect"
+                         ResetValueOnEmptyText="false"
+                         ValueChanged="ClienteValueChanged"
+                         CoerceText="true"
+                         SearchFunc="@BuscarCliente"
+                         Clearable="true"
+                         ToStringFunc="@(e => e == null ? null : $"{e.RFC} - {e.NombreCliente}")">
+        </MudAutocomplete>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter] public EventCallback<PersonaListItemDto> OnClienteSelected { get; set; }
+
+    private PersonaListItemDto? _clienteSelect;
+
+    public void ClearSelection()
+    {
+        _clienteSelect = null;
+        StateHasChanged();
+    }
+
+    private async Task ClienteValueChanged(PersonaListItemDto select)
+    {
+        _clienteSelect = select;
+        if (OnClienteSelected.HasDelegate)
+        {
+            await OnClienteSelected.InvokeAsync(select);
+        }
+    }
+
+    private async Task<IEnumerable<PersonaListItemDto>> BuscarCliente(string value, CancellationToken token)
+    {
+        try
+        {
+            var result = await _clientesApi.GetClientes(q: value, pageSize: 10);
+            return result.Data?.Results ?? new List<PersonaListItemDto>();
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+            return new List<PersonaListItemDto>();
+        }
+    }
+}

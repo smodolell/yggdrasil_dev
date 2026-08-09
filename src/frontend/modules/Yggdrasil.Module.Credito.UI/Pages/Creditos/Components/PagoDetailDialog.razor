@@ -1,0 +1,110 @@
+@using Yggdrasil.Module.Credito.UI.Services.Creditos
+@using Yggdrasil.Module.Credito.UI.Services.Creditos.DTOs
+@inject ICreditosApi _creditosApi
+
+<MudDialog>
+    <DialogContent>
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+        }
+        else if (_detail != null)
+        {
+            <MudGrid Spacing="2" Class="mb-4">
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Fecha Pago</MudText>
+                    <MudText Typo="Typo.body2" Class="font-weight-bold">@_detail.FechaPago.ToString("dd/MM/yyyy")</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Fecha Registro</MudText>
+                    <MudText Typo="Typo.body2">@_detail.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Monto</MudText>
+                    <MudText Typo="Typo.body2" Class="font-weight-bold">@_detail.Monto.ToString("N2")</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Saldo a Favor</MudText>
+                    <MudText Typo="Typo.body2">@_detail.SaldoFavor.ToString("N2")</MudText>
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Movimientos Aplicados</MudText>
+            <MudTable T="PagoDetailItemDto" Items="_detail.Detalles" Dense="true" Outlined="true" Elevation="0" Class="rounded">
+                <HeaderContent>
+                    <MudTh>Mov. ID</MudTh>
+                    <MudTh>Descripción</MudTh>
+                    <MudTh Style="text-align:center;">Vencimiento</MudTh>
+                    <MudTh Style="text-align:right;">Capital Pagado</MudTh>
+                    <MudTh Style="text-align:right;">Interés Pagado</MudTh>
+                    <MudTh Style="text-align:right;">IVA Pagado</MudTh>
+                    <MudTh Style="text-align:right; font-weight:700;">Total Pagado</MudTh>
+                    <MudTh Style="text-align:right;">Sdo. Total</MudTh>
+                    <MudTh Style="text-align:center;">Cancelado</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Mov. ID" Class="font-monospace">@context.MovimientoId</MudTd>
+                    <MudTd DataLabel="Descripción">@context.DescMovimiento</MudTd>
+                    <MudTd DataLabel="Vencimiento" Style="text-align:center;">@context.FechaVencimiento.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd DataLabel="Capital Pagado" Style="text-align:right;">@context.CapitalPagado.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Interés Pagado" Style="text-align:right;">@context.InteresPagado.ToString("N2")</MudTd>
+                    <MudTd DataLabel="IVA Pagado" Style="text-align:right;">@context.IvaPagado.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Total Pagado" Style="text-align:right; font-weight:600;">@context.TotalPagado.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Sdo. Total" Style="text-align:right;">@context.SaldoTotal.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Cancelado" Style="text-align:center;">
+                        @if (context.Cancelado)
+                        {
+                            <MudTooltip Text="@(string.IsNullOrEmpty(context.MotivoCancelacion) ? "Cancelado" : context.MotivoCancelacion)">
+                                <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" />
+                            </MudTooltip>
+                        }
+                    </MudTd>
+                </RowTemplate>
+                <FooterContent>
+                    <MudTd colspan="3" Style="text-align:right; font-weight:700;">Totales</MudTd>
+                    <MudTd Style="text-align:right; font-weight:700;">@_detail.Detalles.Sum(d => d.CapitalPagado).ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right; font-weight:700;">@_detail.Detalles.Sum(d => d.InteresPagado).ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right; font-weight:700;">@_detail.Detalles.Sum(d => d.IvaPagado).ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right; font-weight:700;">@_detail.Detalles.Sum(d => d.TotalPagado).ToString("N2")</MudTd>
+                    <MudTd colspan="2" />
+                </FooterContent>
+            </MudTable>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="@(() => MudDialog?.Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+    [Parameter] public int PagoId { get; set; }
+
+    private PagoDetailDto? _detail;
+    private bool _loading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        try
+        {
+            var result = await _creditosApi.GetPagoDetailById(PagoId);
+            _detail = result.Content?.Data;
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+            MudDialog?.Close();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

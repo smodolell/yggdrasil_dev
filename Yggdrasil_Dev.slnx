@@ -18,6 +18,7 @@
     <Project Path="src/backend/modules/Yggdrasil.Module.System/Yggdrasil.Module.System.csproj" />
   </Folder>
   <Folder Name="/Application/Frontend/">
+    <Project Path="src/frontend/Yggdrasil.ApiClient/Yggdrasil.ApiClient.csproj" Id="e2c0576f-6196-44ae-a3ea-e73fd2ae7cd7" />
     <Project Path="src/frontend/Yggdrasil.Blazor/Yggdrasil.Blazor.csproj" Id="70e760eb-dde0-4037-aed1-69919fe63565" />
     <Project Path="src/frontend/Yggdrasil.WasmApp/Yggdrasil.WasmApp.csproj" />
   </Folder>

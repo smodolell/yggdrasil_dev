@@ -28,27 +28,59 @@
             </MudSelect>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudTextField @bind-Value="_model.Nombre"
+            <MudTextField @bind-Value="_model.PrimerNombre"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
-                          Label="Nombre"
-                          For="@(() => _model.Nombre)">
+                          Label="Primer Nombre"
+                          For="@(() => _model.PrimerNombre)">
             </MudTextField>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudTextField @bind-Value="_model.Apellido"
+            <MudTextField @bind-Value="_model.SegundoNombre"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
-                          Label="Apellido"
-                          For="@(() => _model.Apellido)">
+                          Label="Segundo Nombre"
+                          For="@(() => _model.SegundoNombre)">
             </MudTextField>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudTextField @bind-Value="_model.DNI"
+            <MudTextField @bind-Value="_model.ApellidoPaterno"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
-                          Label="DNI"
-                          For="@(() => _model.DNI)">
+                          Label="Apellido Paterno"
+                          For="@(() => _model.ApellidoPaterno)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.ApellidoMaterno"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Apellido Materno"
+                          For="@(() => _model.ApellidoMaterno)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.RFC"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="RFC"
+                          For="@(() => _model.RFC)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.NSS"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="NSS"
+                          For="@(() => _model.NSS)">
+            </MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.CURP"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="CURP"
+                          For="@(() => _model.CURP)">
             </MudTextField>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
@@ -75,14 +107,6 @@
                            @bind-Date="_model.FechaNacimiento"
                            For="@(() => _model.FechaNacimiento)">
             </MudDatePicker>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
-            <MudTextField @bind-Value="_model.CUIT"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Label="CUIT"
-                          For="@(() => _model.CUIT)">
-            </MudTextField>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudSelect Margin="Margin.Dense" T="int?" @bind-Value="_model.EdoCivilId" Label="Edo. Civil" Variant="Variant.Outlined">

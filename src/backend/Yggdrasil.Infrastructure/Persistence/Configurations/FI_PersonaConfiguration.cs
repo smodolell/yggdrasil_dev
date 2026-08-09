@@ -97,10 +97,10 @@ public class FI_PersonaConfiguration : IEntityTypeConfiguration<FI_Persona>
             .HasMaxLength(255);
 
         //// Relationships (Foreign Keys)
-        //builder.HasOne(p => p.FI_Perfil)
-        //    .WithMany() // Si FI_Perfil tiene una colección de FI_Persona, ajusta aquí
-        //    .HasForeignKey(p => p.PerfilId)
-        //    .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(p => p.FI_Perfil)
+            .WithMany() // Si FI_Perfil tiene una colección de FI_Persona, ajusta aquí
+            .HasForeignKey(p => p.PerfilId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(p => p.CAT_TipoPersona)
             .WithMany()
@@ -138,10 +138,10 @@ public class FI_PersonaConfiguration : IEntityTypeConfiguration<FI_Persona>
             .HasForeignKey(p => p.PersonaId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        //builder.HasMany(p => p.FI_PersonaPerfil)
-        //    .WithOne()
-        //    .HasForeignKey(p => p.PersonaId)
-        //    .OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(p => p.FI_PersonaPerfil)
+            .WithOne()
+            .HasForeignKey(p => p.PersonaId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Índices (opcional, basado en tus necesidades)
         builder.HasIndex(p => p.RFC).HasDatabaseName("IX_Persona_RFC");

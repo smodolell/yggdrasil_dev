@@ -14,8 +14,6 @@
     <Folder Include="Features\Catalogos\Queries\" />
     <Folder Include="Features\Catalogos\Specifications\" />
     <Folder Include="Features\Operaciones\Liquidacion\" />
-    <Folder Include="Features\Operaciones\ActivarCredito\" />
     <Folder Include="Features\Operaciones\CancelarCredito\" />
-    <Folder Include="Features\Financial\" />
   </ItemGroup>
 </Project>

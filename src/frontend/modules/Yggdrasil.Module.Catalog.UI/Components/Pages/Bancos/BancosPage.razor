@@ -1,0 +1,5 @@
+﻿@attribute [Route(PageRoute.BancosPage)]
+@attribute [AccessPoint(AppMenu.MenuCatalogo, "Banco")]
+@using Yggdrasil.Module.Catalog.UI.Components.Pages.Bancos.Components
+<PageHeader Title="Bancos" Icon="@AppMenu.MenuCatalogoIcon"></PageHeader>
+<BancoList></BancoList>

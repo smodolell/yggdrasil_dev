@@ -1240,9 +1240,6 @@ namespace Yggdrasil.Infrastructure.Migrations
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("Email");
 
-                    b.Property<int>("FI_PerfilId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("FechaAltaCliente")
                         .HasColumnType("datetime2")
                         .HasColumnName("FechaAltaCliente");
@@ -1322,8 +1319,6 @@ namespace Yggdrasil.Infrastructure.Migrations
 
                     b.HasIndex("Email")
                         .HasDatabaseName("IX_Persona_Email");
-
-                    b.HasIndex("FI_PerfilId");
 
                     b.HasIndex("GeneroId")
                         .HasDatabaseName("IX_Persona_GeneroId");
@@ -2464,15 +2459,15 @@ namespace Yggdrasil.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Yggdrasil.Domain.Entities.FI_Perfil", "FI_Perfil")
-                        .WithMany()
-                        .HasForeignKey("FI_PerfilId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Yggdrasil.Domain.Entities.CAT_Genero", "CAT_Genero")
                         .WithMany()
                         .HasForeignKey("GeneroId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.FI_Perfil", "FI_Perfil")
+                        .WithMany()
+                        .HasForeignKey("PerfilId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

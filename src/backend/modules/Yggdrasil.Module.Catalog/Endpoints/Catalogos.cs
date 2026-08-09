@@ -13,12 +13,54 @@ namespace Yggdrasil.Module.Catalog.Endpoints;
 
 public class Catalogos : EndpointGroupBase
 {
-    public override string? GroupName => "catalogos";
+    public override string? GroupName => "cat-catalogos";
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("CC - Catalogos");
+            .WithTags("Catalogo - Catalogos");
 
+        #region Banco
+        group.MapGet("banco/{id}", GetBancoById)
+            .WithName("GetBancoById")
+            .WithSummary("Obtiene un banco por ID")
+            .Produces<ApiResponseDto<BancoEditDto>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("banco/", GetBancos)
+            .WithSummary("Obtiene bancos paginados y filtrados")
+            .Produces<ApiResponseDto<PagedResultDto<BancoListItemDto>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+
+        group.MapPost("banco/", CreateBanco)
+            .WithName("CreateBanco")
+            .WithSummary("Crea un nuevo banco")
+            .Accepts<BancoEditDto>("application/json")
+            .Produces<ApiResponseDto<int>>(StatusCodes.Status201Created)
+            .Produces<ApiResponseDto<int>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseDto<int>>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto<int>>(StatusCodes.Status500InternalServerError);
+
+        group.MapPut("banco/{id}", UpdateBanco)
+            .WithName("UpdateBanco")
+            .WithSummary("Actualiza un banco")
+            .Accepts<BancoEditDto>("application/json")
+            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+
+        group.MapDelete("banco/{id}", DeleteBanco)
+            .WithName("DeleteBanco")
+            .WithSummary("Elimina un banco")
+            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+        #endregion
 
         #region Moneda
         group.MapGet("moneda/{id}", GetMonedaById)
@@ -309,6 +351,60 @@ public class Catalogos : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
         #endregion
     }
+
+    #region Banco
+    public static async Task<IResult> GetBancoById(
+        [FromServices] IQueryMediator queryMediator,
+        int id)
+    {
+        var result = await queryMediator.QueryAsync(new GetBancoByIdQuery { BancoId = id });
+        return result.ToCustomMinimalApiResult();
+    }
+
+    public static async Task<IResult> GetBancos(
+        [FromServices] IQueryMediator queryMediator,
+        [FromQuery] string? q = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int size = 10,
+        [FromQuery] string sortColumn = nameof(BancoListItemDto.Id),
+        [FromQuery] bool sortDescending = false)
+    {
+        var result = await queryMediator.QueryAsync(new GetBancosQuery
+        {
+            SearchText = q,
+            Page = page,
+            PageSize = size,
+            SortColumn = sortColumn,
+            SortDescending = sortDescending
+        });
+        return result.ToCustomMinimalApiResult();
+    }
+
+    public static async Task<IResult> CreateBanco(
+        [FromServices] ICommandMediator commandMediator,
+        [FromBody] BancoEditDto model)
+    {
+        var result = await commandMediator.SendAsync(new CreateBancoCommand { Model = model });
+        return result.ToCustomMinimalApiResult();
+    }
+
+    public static async Task<IResult> UpdateBanco(
+        [FromServices] ICommandMediator commandMediator,
+        [FromRoute] int id,
+        [FromBody] BancoEditDto model)
+    {
+        var result = await commandMediator.SendAsync(new UpdateBancoCommand { BancoId = id, Model = model });
+        return result.ToCustomMinimalApiResult();
+    }
+
+    public static async Task<IResult> DeleteBanco(
+        [FromServices] ICommandMediator commandMediator,
+        [FromRoute] int id)
+    {
+        var result = await commandMediator.SendAsync(new DeleteBancoCommand { BancoId = id });
+        return result.ToCustomMinimalApiResult();
+    }
+    #endregion
 
 
     #region Moneda

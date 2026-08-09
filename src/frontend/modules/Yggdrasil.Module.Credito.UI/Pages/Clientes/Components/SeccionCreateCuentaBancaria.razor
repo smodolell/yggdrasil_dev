@@ -10,20 +10,7 @@
     <FluentValidator AsyncMode="true" />
     <ValidationSummary></ValidationSummary>
     <MudGrid>
-        <MudItem xs="12" sm="6" md="6">
-            <MudSelect Margin="Margin.Dense" T="int?"
-                       @bind-Value="_model.TipoCuentaBancariaId"
-                       For="@(() => _model.TipoCuentaBancariaId)"
-                       Label="Tipo de cuenta" Variant="Variant.Outlined">
-                @if (_listTipoCuentaBancaria != null)
-                {
-                    @foreach (var item in _listTipoCuentaBancaria)
-                    {
-                        <MudSelectItem T="int?" Value="@Convert.ToInt32(item.Value)">@item.Text </MudSelectItem>
-                    }
-                }
-            </MudSelect>
-        </MudItem>
+    
 
         <MudItem xs="12" sm="6" md="6">
             <MudTextField @bind-Value="_model.NroCuentaBancaria"
@@ -89,17 +76,12 @@
     private CuentaBancariaEditDto _model = new CuentaBancariaEditDto();
 
     private List<SelectListItemDto>? _listBanco;
-    private List<SelectListItemDto>? _listTipoCuentaBancaria;
     private List<SelectListItemDto>? _listMoneda;
     private EditForm? _editForm;
 
     protected async override Task OnInitializedAsync()
     {
-        if (_listTipoCuentaBancaria == null)
-        {
-            var result = await _selectListService.GetTiposCuentaBancariaAsync();
-            _listTipoCuentaBancaria = result.Data;
-        }
+        
         if (_listBanco == null)
         {
             var result = await _selectListService.GetBancosAsync();

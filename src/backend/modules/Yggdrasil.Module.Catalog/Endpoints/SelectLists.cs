@@ -11,11 +11,11 @@ namespace Yggdrasil.Module.Catalog.Endpoints;
 
 public class SelectLists : EndpointGroupBase
 {
-    public override string? GroupName => "select-lists";
+    public override string? GroupName => "cat-select-lists";
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("CAT - Select Lists");
+            .WithTags("Catalogos - Select Lists");
 
         group.MapGet("monedas", GetMonedaSelectList)
              .WithName("GetMonedaSelectList")

@@ -12,24 +12,42 @@ public class ClienteEditDtoValidator : AbstractValidator<ClienteEditDto>
         RuleFor(p => p.TipoPersonaId)
            .NotNull();
 
-        #region Persona Fisica 
 
-        RuleFor(x => x.CUIT)
+        RuleFor(x => x.RFC)
             .NotEmpty()
             .MaximumLength(30)
-            .WithName("CUIT")
+            .WithName("RFC");
+
+        #region Persona Fisica 
+
+        RuleFor(x => x.CURP)
+            .NotEmpty()
+            .MaximumLength(30)
+            .WithName("CURP")
             .When(IsPersonaFisica());
 
-        RuleFor(x => x.Nombre)
+        RuleFor(x => x.PrimerNombre)
             .NotEmpty()
             .MaximumLength(100)
-            .WithName("Nombre")
+            .WithName("Primer Nombre")
             .When(IsPersonaFisica());
 
-        RuleFor(r => r.Apellido)
+        RuleFor(x => x.SegundoNombre)
+           .NotEmpty()
+           .MaximumLength(100)
+           .WithName("Segundo Nombre")
+           .When(IsPersonaFisica());
+
+        RuleFor(r => r.ApellidoPaterno)
             .NotEmpty()
             .MaximumLength(80)
-            .WithName("Apellido")
+            .WithName("Apellido Paterno")
+            .When(IsPersonaFisica());
+
+        RuleFor(r => r.ApellidoMaterno)
+            .NotEmpty()
+            .MaximumLength(80)
+            .WithName("Apellido Materno")
             .When(IsPersonaFisica());
 
 
@@ -45,7 +63,7 @@ public class ClienteEditDtoValidator : AbstractValidator<ClienteEditDto>
 
         #endregion
 
-        #region Persona Juridica
+        #region Persona Moral
 
         RuleFor(r => r.RazonSocial)
            .NotEmpty()
@@ -63,17 +81,6 @@ public class ClienteEditDtoValidator : AbstractValidator<ClienteEditDto>
 
 
 
-        RuleFor(c => c.DNI)
-            .NotEmpty()
-            .WithMessage("El DNI es obligatorio.")
-            //.When(c => c.PersonaId == 0)
-            //.MustAsync(async (rfc, cancellation) => 
-            //{
-            //    var  result = !await _clienteValidatorService.ExisteRfc(rfc??"");
-            //    return result;
-            //}).WithMessage("El RFC ya existe en la base de datos.")
-            ;
-
 
         RuleFor(r => r.Email)
             .NotEmpty()
@@ -84,14 +91,14 @@ public class ClienteEditDtoValidator : AbstractValidator<ClienteEditDto>
 
 
 
-    private bool EdadEnRango(DateTime? fechaNacimiento)
+    private static bool EdadEnRango(DateTime? fechaNacimiento)
     {
         if (fechaNacimiento == null) return false;
         var edad = CalcularEdad(fechaNacimiento ?? DateTime.Now);
         return edad >= 18 && edad <= 60;
     }
 
-    private int CalcularEdad(DateTime fechaNacimiento)
+    private static int CalcularEdad(DateTime fechaNacimiento)
     {
         var today = DateTime.Today;
         var edad = today.Year - fechaNacimiento.Year;
@@ -106,19 +113,14 @@ public class ClienteEditDtoValidator : AbstractValidator<ClienteEditDto>
     }
 
 
-    public Func<ClienteEditDto, bool> IsPersonaFisica()
+    public static Func<ClienteEditDto, bool> IsPersonaFisica()
     {
-        var predicate = PredicateBuilder.New<ClienteEditDto>();
-        predicate.Or(p => p.TipoPersonaId == AppConstants.CAT_TipoPersonaId_PersonaFisica);
-
-        return predicate;
+        return p => p.TipoPersonaId == 1;
     }
 
-    public Func<ClienteEditDto, bool> IsPersonaJuridica()
+    public static Func<ClienteEditDto, bool> IsPersonaJuridica()
     {
-        var predicate = PredicateBuilder.New<ClienteEditDto>();
-        predicate.Or(p => p.TipoPersonaId == AppConstants.CAT_TipoPersonaId_PersonaJuridia);
-        return predicate;
+        return p => p.TipoPersonaId == 2;
     }
 
 }

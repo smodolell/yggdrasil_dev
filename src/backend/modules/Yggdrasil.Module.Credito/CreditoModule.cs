@@ -1,6 +1,9 @@
 ﻿using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Yggdrasil.Common.Interfaces;
+using Yggdrasil.Module.Credito.Features.Financial.Factories;
+using Yggdrasil.Module.Credito.Features.Financial.Services;
+using Yggdrasil.Module.Credito.Features.Financial.Strategies;
 
 namespace Yggdrasil.Module.Credito;
 
@@ -13,11 +16,11 @@ public class CreditoModule : IModule
 
         services.AddValidatorsFromAssemblyContaining<CreditoModule>();
 
-        //services.AddScoped<FrancesStrategy>();
-        //services.AddScoped<AlemanStrategy>();
-        //services.AddScoped<AmericanaStrategy>();
-        //services.AddScoped<IAmortizationStrategyFactory, AmortizationStrategyFactory>();
-        //services.AddScoped<IAmortizationService, AmortizationService>();
+        services.AddScoped<FrancesStrategy>();
+        services.AddScoped<AlemanStrategy>();
+        services.AddScoped<AmericanaStrategy>();
+        services.AddScoped<IAmortizationStrategyFactory, AmortizationStrategyFactory>();
+        services.AddScoped<IAmortizationService, AmortizationService>();
 
 
 

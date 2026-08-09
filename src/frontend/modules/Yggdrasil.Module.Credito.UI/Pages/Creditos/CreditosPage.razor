@@ -1,0 +1,16 @@
+@attribute [Route(PageRoute.CreditosPage)]
+@attribute [AccessPoint(AppMenu.MenuOperacion, "Créditos")]
+@using Yggdrasil.Module.Credito.UI.Pages.Creditos.Components
+
+<PageHeader Title="Créditos" Icon="@AppMenu.MenuOperacionIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+<CreditoList />
+
+@code {
+    private List<BreadcrumbItem> _items = new()
+    {
+        new BreadcrumbItem("Créditos", href: null, icon: AppMenu.MenuOperacionIcon, disabled: true)
+    };
+}
