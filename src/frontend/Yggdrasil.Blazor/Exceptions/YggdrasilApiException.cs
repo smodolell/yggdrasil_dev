@@ -10,6 +10,10 @@ public class YggdrasilApiException : Exception
     public string Content { get; }
     // Diccionario de: Campo -> Lista de Errores
     public Dictionary<string, List<string>> ValidationErrors { get; } = new();
+    // Lista cruda de errores tal como los devuelve la API (campo "errors")
+    public List<string> Errors { get; } = new();
+    // Mensaje de la API (campo "message")
+    public string? ApiMessage { get; }
 
     public YggdrasilApiException(HttpStatusCode statusCode, string content)
         : base($"API Error: {statusCode}")
@@ -22,8 +26,12 @@ public class YggdrasilApiException : Exception
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
             var apiResponse = JsonSerializer.Deserialize<ApiResponseDto<object>>(content, options);
 
+            ApiMessage = apiResponse?.Message;
+
             if (apiResponse?.Errors != null)
             {
+                Errors.AddRange(apiResponse.Errors);
+
                 foreach (var error in apiResponse.Errors)
                 {
                     var parts = error.Split(": ");

@@ -1,0 +1,188 @@
+@using System.Globalization
+@using Microsoft.JSInterop
+@inject IJSRuntime _jsRuntime
+
+<MudDataGrid Outlined="true"
+             Dense="true"
+             Bordered="true"
+             ServerData="GetTableData"
+             FixedHeader="true"
+             SortMode="SortMode.Single"
+             Loading="_loading"
+             @ref="dataGridRef"
+             T="CalendarioLaboralListItemDto">
+    <ToolBarContent>
+        <div style="width:140px" class="mr-2">
+            <MudNumericField T="int" @bind-Value="_anio" Label="Año" Margin="Margin.Dense" Variant="Variant.Outlined" />
+        </div>
+        <div style="width:160px">
+            <MudSelect T="int?" @bind-Value="_mes" Label="Mes" Margin="Margin.Dense" Variant="Variant.Outlined" Clearable="true">
+                @for (var m = 1; m <= 12; m++)
+                {
+                    var mes = m;
+                    <MudSelectItem T="int?" Value="@mes">@CultureInfo.GetCultureInfo("es-MX").DateTimeFormat.GetMonthName(mes)</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        <MudIconButton Size="MudBlazor.Size.Medium"
+                       Icon="@Icons.Material.Filled.Search"
+                       OnClick="()=>dataGridRef.ReloadServerData()"
+                       Variant="Variant.Text"
+                       Color="Color.Primary">
+        </MudIconButton>
+
+        <MudSpacer></MudSpacer>
+
+        <MudStack Row="true" AlignItems="AlignItems.End" Spacing="2">
+            <MudButton Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.Download"
+                       OnClick="DescargarLayoutClick"
+                       Color="Color.Default">
+                Layout
+            </MudButton>
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected" Accept=".xlsx,.xls">
+                <CustomContent>
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Upload"
+                               Color="Color.Default">
+                        Importar Días Inhábiles
+                    </MudButton>
+                </CustomContent>
+            </MudFileUpload>
+            <MudButton Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="GenerarClick"
+                       Color="Color.Primary">
+                Generar Año
+            </MudButton>
+        </MudStack>
+    </ToolBarContent>
+    <Columns>
+        <TemplateColumn Title="Fecha" SortBy="x => x.Fecha" HeaderStyle="width:130px;">
+            <CellTemplate>@context.Item.Fecha.ToString("dd/MM/yyyy")</CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Día" Sortable="false" HeaderStyle="width:120px;">
+            <CellTemplate>@CultureInfo.GetCultureInfo("es-MX").DateTimeFormat.GetDayName(context.Item.Fecha.DayOfWeek)</CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="¿Hábil?" HeaderStyle="width:90px;">
+            <CellTemplate>
+                <MudIcon Icon="@(context.Item.EsHabil ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)"
+                         Color="@(context.Item.EsHabil ? Color.Success : Color.Error)"
+                         Size="Size.Small" />
+            </CellTemplate>
+        </TemplateColumn>
+        <PropertyColumn Title="Descripción" Property="x => x.Descripcion" />
+        <TemplateColumn HeaderStyle="width:60px;" StickyRight="true" Resizable="false" Title="Acciones">
+            <CellTemplate>
+                <MudIconButton Size="@MudBlazor.Size.Small"
+                               Icon="@Icons.Material.Outlined.Edit"
+                               Color="Color.Primary"
+                               OnClick="() => EditClick(context.Item)" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="CalendarioLaboralListItemDto" />
+    </PagerContent>
+    <NoRecordsContent>
+        <MudText>No hay registros de <strong>Calendario Laboral</strong> para el período seleccionado</MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+@code {
+    private int _anio = DateTime.Today.Year;
+    private int? _mes;
+    private bool _loading;
+    private MudDataGrid<CalendarioLaboralListItemDto> dataGridRef = null!;
+    private readonly DialogOptions _optionsDialogs = new() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    private async Task<GridData<CalendarioLaboralListItemDto>> GetTableData(GridState<CalendarioLaboralListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        _loading = true;
+        try
+        {
+            var sortDef = gridState.SortDefinitions.FirstOrDefault();
+            var sortColumn = sortDef?.SortBy ?? nameof(CalendarioLaboralListItemDto.Fecha);
+            var sortDesc = sortDef?.Descending ?? false;
+
+            var result = await _catalogoApi.GetPaginatedCalendarioLaboralAsync(
+                _anio, _mes, gridState.Page + 1, gridState.PageSize, sortColumn, sortDesc);
+
+            return new GridData<CalendarioLaboralListItemDto>
+            {
+                TotalItems = result.Data?.TotalCount ?? 0,
+                Items = result.Data?.Results ?? []
+            };
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+            return new GridData<CalendarioLaboralListItemDto> { TotalItems = 0, Items = [] };
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task EditClick(CalendarioLaboralListItemDto item)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(CalendarioLaboralEditDialog.Id), item.Id },
+            { nameof(CalendarioLaboralEditDialog.Fecha), item.Fecha },
+            { nameof(CalendarioLaboralEditDialog.EsHabil), item.EsHabil },
+            { nameof(CalendarioLaboralEditDialog.Descripcion), item.Descripcion ?? "" }
+        };
+        var dialog = await _dialogService.ShowAsync<CalendarioLaboralEditDialog>("Editar Día", parameters, _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+    }
+
+    private async Task GenerarClick()
+    {
+        var parameters = new DialogParameters { { nameof(GenerarCalendarioDialog.Anio), _anio } };
+        var dialog = await _dialogService.ShowAsync<GenerarCalendarioDialog>("Generar Calendario Laboral", parameters, _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+    }
+
+    private async Task DescargarLayoutClick()
+    {
+        try
+        {
+            var file = await _catalogoApi.GetLayoutCalendarioAsync();
+            var base64 = Convert.ToBase64String(file.FileContent);
+            var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Yggdrasil.Module.Catalog.UI/js/fileDownload.js");
+            await module.InvokeVoidAsync("downloadFileFromBytes", file.FileName, file.ContentType, base64);
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task OnFileSelected(IBrowserFile file)
+    {
+        if (file == null) return;
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            var streamPart = new StreamPart(stream, file.Name, file.ContentType);
+            await _catalogoApi.ImportarDiasInhabilesAsync(streamPart);
+            _snackbarService.Add("Días inhábiles importados correctamente", Severity.Success);
+            await dataGridRef.ReloadServerData();
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+}

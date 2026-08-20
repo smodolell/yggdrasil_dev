@@ -1,8 +1,4 @@
-﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-
-<MudDataGrid Outlined="true"
+﻿<MudDataGrid Outlined="true"
              Dense="true"
              Bordered="true"
              ServerData="GetTableData"
@@ -32,7 +28,7 @@
     <Columns>
         <PropertyColumn Title="Código BCRA" Property="x => x.CodigoBCRA" StickyLeft="true" />
         <PropertyColumn Title="Banco" Property="x => x.NomBanco" />
-        <PropertyColumn Title="CBU Prefix" Property="x => x.CBUPrefix" />
+        <PropertyColumn Title="CBU Prefix" Property="x => x.CbuPrefix" />
         <TemplateColumn HeaderStyle="white-space:nowrap;width:50px;" StickyRight="true" Resizable="false" Title="Acciones">
             <CellTemplate>
                 <MudStack Row="true" Justify="Justify.FlexEnd">
@@ -74,7 +70,7 @@
             _sortBy = _sortDefinitions.SortBy;
             _sortDescending = _sortDefinitions.Descending;
         }
-        var paginatedList = await _catalogosApi.GetBancos(_searchText,
+        var paginatedList = await _catalogoApi.BancoAsync(_searchText ?? "",
             _pageNumber,
             gridState.PageSize, _sortBy, _sortDescending);
         return new GridData<BancoListItemDto>()
@@ -115,16 +111,9 @@
 
             try
             {
-                var result = await _catalogosApi.DeleteBanco(item.Id);
-                if (result.Success)
-                {
-                    await dataGridRef.ReloadServerData();
-                    _snackbarService.Add(result.Message, MudBlazor.Severity.Success);
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "ERROR", MudBlazor.Severity.Error);
-                }
+                await _catalogoApi.DeleteBancoAsync(item.Id);
+                await dataGridRef.ReloadServerData();
+                _snackbarService.Add("Banco eliminado correctamente", MudBlazor.Severity.Success);
             }
             catch (Exception ex)
             {

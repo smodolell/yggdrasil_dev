@@ -1,10 +1,6 @@
 ﻿@attribute [Route(PageRoute.ClienteNew)]
 @attribute [AccessPoint(AppMenu.MenuOperacion, "Nuevo Cliente")]
-@using Yggdrasil.Module.Credito.UI.Services.Clientes
-@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
 @using Yggdrasil.Module.Credito.UI.Helpers
-
-@inject IClientesApi _clienteService
 
 <PageHeader Title="Nuevo Cliente" Icon="@AppMenu.MenuOperacionIcon">
     <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
@@ -24,7 +20,7 @@
             <MudStack Justify="Justify.FlexStart" Row="true">
                 @foreach (var item in _perfiles)
                 {
-                    <MudButton Variant="Variant.Filled" Color="@(item.ButtonDisable? Color.Default: Color.Primary)" Disabled="item.ButtonDisable" OnClick="@(() => SelectComponent(item.PerfilId))">@item.NomPerfil</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="@(item.ButtonDisable ? Color.Default : Color.Primary)" Disabled="item.ButtonDisable" OnClick="@(() => SelectComponent(item.PerfilId))">@item.NomPerfil</MudButton>
                 }
             </MudStack>
         </MudCardContent>
@@ -49,10 +45,10 @@
                 <DynamicComponent Type="item.TypeComponent"
                                   @ref="item.Ref"
                                   Parameters="@(new Dictionary<string, object>
-                                                      {
-                                                          ["OnValidationChanged"] = EventCallback.Factory.Create<(int, bool)>(this, HandleValidationChanged)
-                                                      }
-                                    )">
+                                  {
+                                      ["OnValidationChanged"] = EventCallback.Factory.Create<(int, bool)>(this, HandleValidationChanged)
+                                  }
+                                                                    )">
                 </DynamicComponent>
 
 
@@ -93,15 +89,15 @@
     {
         if (_perfiles == null)
         {
-            var result = await _clienteService.GetPerfilesActivosAsync();
-            _perfiles = result.Data;    
+            var result = await _clientesApi.GetPerfilesActivosAsync();
+            _perfiles = result.Data.ToList();
         }
     }
 
 
     private async Task SelectComponent(int perfilId)
     {
-        var result = await _clienteService.GetSeccionesByPerfilIdAsync(perfilId);
+        var result = await _clientesApi.GetSeccionesByPerfilIdAsync(perfilId);
 
         var secciones = result.Data!.Where(r => r.IsCreate).Select(s => s.SeccionId).ToList();
 
@@ -141,25 +137,25 @@
             {
                 try
                 {
-                    var result = await _clienteService.CreatePersonaDefault(new CreatePersonaDefaultDto(PerfilId, DateTime.Now));
+                    var result = await _clientesApi.CreatePersonaDefaultAsync(new CreatePersonaDefaultCommand { PerfilId = PerfilId, FechaRegistro = DateTime.Now });
                     var personaId = result.Data;
-                        foreach (var componente in _componentes)
+                    foreach (var componente in _componentes)
+                    {
+                        if (componente.Ref?.Instance is ISeccionPersonaCreate seccionCreate)
                         {
-                            if (componente.Ref?.Instance is ISeccionPersonaCreate seccionCreate)
+                            var resultComponente = await seccionCreate.Create(personaId);
+                            if (resultComponente.IsSuccess)
                             {
-                                var resultComponente = await seccionCreate.Create(personaId);
-                                if (resultComponente.IsSuccess)
-                                {
-                                    _snackbarService.Add(result.Message, Severity.Success);
-                                }
-                                else
-                                {
-                                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "ERROR", Severity.Error);
-                                }
+                                _snackbarService.Add(result.Message, Severity.Success);
+                            }
+                            else
+                            {
+                                _snackbarService.Add(result.Errors.FirstOrDefault() ?? "ERROR", Severity.Error);
                             }
                         }
+                    }
 
-                        _navManager.NavigateTo("." + PageRoute.ClienteEdit + $"/{personaId}");
+                    _navManager.NavigateTo("." + PageRoute.ClienteEdit + $"/{personaId}");
 
 
                 }

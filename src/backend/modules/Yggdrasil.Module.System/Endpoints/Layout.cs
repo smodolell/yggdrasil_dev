@@ -17,7 +17,7 @@ public class Layout : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Sistema - Layout");
+            .WithTags("Sistema");
 
         #region Navbar
         group.MapGet("navbar", GetNavbar)
@@ -31,7 +31,7 @@ public class Layout : EndpointGroupBase
     }
 
     #region Navbar
-    public async Task<IResult> GetNavbar(
+    public static async Task<IResult> GetNavbar(
         [FromServices] IQueryMediator queryMediator)
     {
         var result = await queryMediator.QueryAsync(new GetNavbarQuery());

@@ -1,0 +1,217 @@
+@attribute [Route(PageRoute.CreditosPage)]
+@attribute [AccessPoint(AppMenu.MenuOperacion, "Créditos")]
+
+<PageHeader Title="Créditos Simples" Description="Consulta de créditos simples" Icon="@AppMenu.MenuOperacionIcon">
+    <MudBreadcrumbs Items="_items" />
+</PageHeader>
+
+<MudCard Outlined="true" Elevation="0" Class="border-none bg-transparent">
+    <MudDataGrid @ref="_dataGridRef"
+                 T="CreditoCsListItemDto"
+                 ServerData="GetTableData"
+                 Dense="true"
+                 Outlined="true"
+                 Bordered="false"
+                 FixedHeader="true"
+                 SortMode="SortMode.Single"
+                 Loading="_loading"
+                 Class="mud-elevation-0 border rounded-lg overflow-hidden">
+
+        <ToolBarContent>
+            <div style="width: 100%; max-width: 350px;">
+                <MudTextField T="string"
+                              @bind-Value="_searchText"
+                              Placeholder="Buscar por clave..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Search"
+                              Clearable="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              IconSize="Size.Small"
+                              Immediate="true"
+                              OnKeyUp="OnSearchKeyUp"
+                              OnClearButtonClick="() => _dataGridRef.ReloadServerData()" />
+            </div>
+            <div style="width: 220px;" class="ml-2">
+                <MudSelect T="int?"
+                           @bind-Value="_tipoCreditoId"
+                           @bind-Value:after="() => _dataGridRef.ReloadServerData()"
+                           Placeholder="Tipo de Crédito"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true">
+                    @foreach (var tipoCredito in _tiposCredito)
+                    {
+                        <MudSelectItem T="int?" Value="@tipoCredito.Id">@tipoCredito.NomTipoCredito</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+
+            <MudSpacer />
+
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudTooltip Text="Actualizar Datos">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh"
+                                   Size="Size.Small"
+                                   Color="Color.Default"
+                                   OnClick="() => _dataGridRef.ReloadServerData()"
+                                   Disabled="_loading" />
+                </MudTooltip>
+                <MudButton Variant="Variant.Filled"
+                           Size="Size.Small"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Outlined.Add"
+                           OnClick="NuevoClick">
+                    Nuevo Crédito
+                </MudButton>
+            </MudStack>
+        </ToolBarContent>
+
+        <Columns>
+            <PropertyColumn Title="Clave" Property="x => x.ClaveCredito" HeaderStyle="width:130px;" />
+            <PropertyColumn Title="Tipo de Crédito" Property="x => x.NomTipoCredito" />
+            <TemplateColumn Title="Capital" SortBy="x => x.Capital" HeaderStyle="width:130px; text-align:right;" CellClass="text-right">
+                <CellTemplate>@context.Item.Capital.ToString("N2")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Tasa %" SortBy="x => x.Tasa" HeaderStyle="width:100px; text-align:right;" CellClass="text-right">
+                <CellTemplate>@context.Item.Tasa.ToString("N2")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Plazo" SortBy="x => x.Plazo" HeaderStyle="width:90px; text-align:right;" CellClass="text-right">
+                <CellTemplate>@context.Item.Plazo</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Fecha Inicio" SortBy="x => x.FechaInicio" HeaderStyle="width:130px; text-align:center;" CellClass="text-center">
+                <CellTemplate>@context.Item.FechaInicio.ToString("dd/MM/yyyy")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Fecha Activación" SortBy="x => x.FechaActivacion" HeaderStyle="width:150px; text-align:center;" CellClass="text-center">
+                <CellTemplate>@(context.Item.FechaActivacion?.ToString("dd/MM/yyyy") ?? "-")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Estatus" HeaderStyle="width:130px; text-align:center;" CellClass="text-center">
+                <CellTemplate>
+                    <MudChip T="string" Color="@EstatusColor(context.Item.NomEstatusCredito)" Size="Size.Small">@context.Item.NomEstatusCredito</MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn HeaderStyle="width:140px; text-align:right;" StickyRight="true" Resizable="false" Title="Acciones">
+                <CellTemplate>
+                    <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="0">
+                        <MudTooltip Text="Ver Detalle">
+                            <MudIconButton Size="Size.Small"
+                                           Icon="@Icons.Material.Outlined.Visibility"
+                                           Color="Color.Default"
+                                           OnClick="() => DetailClick(context.Item.Id)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Size="Size.Small"
+                                           Icon="@Icons.Material.Outlined.Edit"
+                                           Color="Color.Default"
+                                           OnClick="() => EditClick(context.Item.Id)" />
+                        </MudTooltip>
+                        @if (context.Item.EstatusCreditoId == 1)
+                        {
+                            <MudTooltip Text="Activar">
+                                <MudIconButton Size="Size.Small"
+                                               Icon="@Icons.Material.Outlined.CheckCircle"
+                                               Color="Color.Success"
+                                               OnClick="() => ActivarClick(context.Item.Id)" />
+                            </MudTooltip>
+                        }
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="CreditoCsListItemDto" RowsPerPageString="Filas por página:" />
+        </PagerContent>
+
+        <NoRecordsContent>
+            <div class="pa-8 text-center">
+                <MudText Typo="Typo.body1" Class="mud-text-secondary">No se encontraron <strong>Créditos</strong></MudText>
+            </div>
+        </NoRecordsContent>
+    </MudDataGrid>
+</MudCard>
+
+@code {
+    private List<BreadcrumbItem> _items =
+    [
+        new BreadcrumbItem("Créditos Simples", href: null, icon: AppMenu.MenuOperacionIcon, disabled: true)
+    ];
+
+    private MudDataGrid<CreditoCsListItemDto> _dataGridRef = null!;
+    private bool _loading;
+    private string? _searchText;
+    private int? _tipoCreditoId;
+    private List<TipoCreditoListItemDto> _tiposCredito = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await _configuracionApi.GetCSTipoCreditosAsync(string.Empty, 1, 1000, string.Empty, null);
+            _tiposCredito = result.Data?.Results?.ToList() ?? [];
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar los tipos de crédito");
+        }
+    }
+
+    private static Color EstatusColor(string? nomEstatus) => nomEstatus?.Trim().ToLowerInvariant() switch
+    {
+        "activo" => Color.Success,
+        "liquidado" => Color.Default,
+        "cancelado" => Color.Error,
+        "bloqueado" => Color.Warning,
+        _ => Color.Default
+    };
+
+    private async Task<GridData<CreditoCsListItemDto>> GetTableData(GridState<CreditoCsListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        _loading = true;
+        try
+        {
+            var sortDef = gridState.SortDefinitions.FirstOrDefault();
+            var sortColumn = sortDef?.SortBy ?? nameof(CreditoCsListItemDto.FechaInicio);
+            var sortDesc = sortDef?.Descending ?? true;
+
+            var result = await _creditosApi.GetCSCreditosAsync(
+                q: _searchText ?? string.Empty,
+                page: gridState.Page + 1,
+                pageSize: gridState.PageSize,
+                sortColumn: sortColumn,
+                sortDesc: sortDesc,
+                tipoCreditoId: _tipoCreditoId,
+                estatusCreditoId: null,
+                fechaActivacionStart: null,
+                fechaActivacionEnd: null);
+
+            return new GridData<CreditoCsListItemDto>
+            {
+                TotalItems = result.Data?.TotalCount ?? 0,
+                Items = result.Data?.Results?.ToList() ?? []
+            };
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar créditos");
+            return new GridData<CreditoCsListItemDto> { TotalItems = 0, Items = [] };
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OnSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await _dataGridRef.ReloadServerData();
+    }
+
+    private void DetailClick(int id) => _navManager.NavigateTo("." + PageRoute.CreditoDetail + $"/{id}");
+
+    private void EditClick(int id) => _navManager.NavigateTo("." + PageRoute.CreditoEdit + $"/{id}");
+
+    private void ActivarClick(int id) => _navManager.NavigateTo("." + PageRoute.CreditoActivar + $"/{id}");
+
+    private void NuevoClick() => _navManager.NavigateTo("." + PageRoute.CreditoNew);
+}

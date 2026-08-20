@@ -12,5 +12,6 @@ internal static class PageRoute
     public const string PlazosPage = Prefix + "plazos";
     public const string PeriodicidadesPage = Prefix + "periodicidades";
     public const string ColoniasPage = Prefix + "colonias";
+    public const string CalendarioLaboralPage = Prefix + "calendario_laboral";
 
 }

@@ -1,0 +1,184 @@
+@attribute [Route(PageRoute.IntradiasPage)]
+@attribute [AccessPoint(AppMenu.MenuCobranza, "Créditos Intradía")]
+@using Yggdrasil.Module.Credito.UI.Pages.Intradias.Components
+
+<PageHeader Title="Créditos Intradía" Icon="@AppMenu.MenuCobranzaIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+<MudCard Outlined="true" Elevation="0" Class="border-none bg-transparent">
+    <MudDataGrid @ref="_dataGridRef"
+                 T="CreditoIntraDiaListItemDto"
+                 ServerData="GetTableData"
+                 Dense="true"
+                 Outlined="true"
+                 Bordered="false"
+                 FixedHeader="true"
+                 SortMode="SortMode.Single"
+                 Loading="_loading"
+                 Class="mud-elevation-0 border rounded-lg overflow-hidden">
+
+        <ToolBarContent>
+            <MudSpacer />
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudTooltip Text="Actualizar Datos">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh"
+                                   Size="Size.Small"
+                                   Color="Color.Default"
+                                   OnClick="RefreshData"
+                                   Disabled="_loading" />
+                </MudTooltip>
+                <MudButton Variant="Variant.Filled"
+                           Size="Size.Small"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Outlined.Add"
+                           OnClick="AddClick"
+                           Disabled="_loading">
+                    Nuevo Crédito
+                </MudButton>
+            </MudStack>
+        </ToolBarContent>
+
+        <Columns>
+            
+            <TemplateColumn Title="Monto Otorgado" SortBy="x => x.MontoOtorgado" HeaderStyle="text-align:right;" CellClass="text-right">
+                <CellTemplate>@context.Item.MontoOtorgado.ToString("N2")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Capital" SortBy="x => x.Capital" HeaderStyle="text-align:right;" CellClass="text-right">
+                <CellTemplate>@context.Item.Capital.ToString("N2")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Tasa %" SortBy="x => x.Tasa" HeaderStyle="width:100px; text-align:right;" CellClass="text-right">
+                <CellTemplate>@context.Item.Tasa.ToString("N2")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Tasa IVA %" SortBy="x => x.TasaIva" HeaderStyle="width:110px; text-align:right;" CellClass="text-right">
+                <CellTemplate>@context.Item.TasaIva.ToString("N2")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Fecha Primera Renta" SortBy="x => x.FechaPrimeraRenta" HeaderStyle="width:160px; text-align:center;" CellClass="text-center">
+                <CellTemplate>@context.Item.FechaPrimeraRenta.ToString("dd/MM/yyyy")</CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Estado" SortBy="x => x.Estado" HeaderStyle="width:120px; text-align:center;" CellClass="text-center">
+                <CellTemplate>
+                    <MudChip T="string" Color="@EstadoColor(context.Item.Estado)" Size="Size.Small">@EstadoTexto(context.Item.Estado)</MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn HeaderStyle="width:110px; text-align: right;" StickyRight="true" Resizable="false" Title="Acciones">
+                <CellTemplate>
+                    <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="0">
+                        <MudTooltip Text="Ver Detalle">
+                            <MudIconButton Size="Size.Small"
+                                           Icon="@Icons.Material.Outlined.Visibility"
+                                           Color="Color.Default"
+                                           OnClick="() => DetailClick(context.Item.Id)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Size="Size.Small"
+                                           Icon="@Icons.Material.Outlined.Edit"
+                                           Color="Color.Default"
+                                           OnClick="() => EditClick(context.Item.Id)" />
+                        </MudTooltip>
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="CreditoIntraDiaListItemDto" RowsPerPageString="Filas por página:" />
+        </PagerContent>
+
+        <NoRecordsContent>
+            <div class="pa-8 text-center">
+                <MudText Typo="Typo.body1" Class="mud-text-secondary">No se encontraron <strong>Créditos Intradía</strong></MudText>
+            </div>
+        </NoRecordsContent>
+    </MudDataGrid>
+</MudCard>
+
+@code {
+    private List<BreadcrumbItem> _items = new()
+    {
+        new BreadcrumbItem("Créditos Intradía", href: null, icon: AppMenu.MenuCobranzaIcon, disabled: true)
+    };
+
+    private bool _loading;
+    private MudDataGrid<CreditoIntraDiaListItemDto> _dataGridRef = null!;
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        CloseButton = true,
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true
+    };
+
+    private static string EstadoTexto(int estado) => estado switch
+    {
+        1 => "Activo",
+        2 => "Liquidado",
+        3 => "Bloqueado",
+        _ => "Desconocido"
+    };
+
+    private static Color EstadoColor(int estado) => estado switch
+    {
+        1 => Color.Success,
+        2 => Color.Default,
+        3 => Color.Error,
+        _ => Color.Default
+    };
+
+    private async Task<GridData<CreditoIntraDiaListItemDto>> GetTableData(GridState<CreditoIntraDiaListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        _loading = true;
+        try
+        {
+            var sortDef = gridState.SortDefinitions.FirstOrDefault();
+            var sortColumn = sortDef?.SortBy ?? nameof(CreditoIntraDiaListItemDto.FechaPrimeraRenta);
+            var sortDesc = sortDef?.Descending ?? true;
+
+            var result = await _intradiasApi.CobGetCreditosIntraDiaAsync(
+                page: gridState.Page + 1,
+                pageSize: gridState.PageSize,
+                sortColumn: sortColumn,
+                sortDesc: sortDesc,
+                fechaPrimeraRentaStart: null,
+                fechaPrimeraRentaEnd: null);
+
+            return new GridData<CreditoIntraDiaListItemDto>
+            {
+                TotalItems = result.Data?.TotalCount ?? 0,
+                Items = result.Data?.Results?.ToList() ?? new List<CreditoIntraDiaListItemDto>()
+            };
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar créditos intradía");
+            return new GridData<CreditoIntraDiaListItemDto> { Items = Array.Empty<CreditoIntraDiaListItemDto>(), TotalItems = 0 };
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task RefreshData()
+    {
+        if (_dataGridRef != null) await _dataGridRef.ReloadServerData();
+    }
+
+    private async Task AddClick()
+    {
+        var dialog = await _dialogService.ShowAsync<CreditoIntraDiaFormDialog>("Nuevo Crédito Intradía", new DialogParameters(), _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled) await RefreshData();
+    }
+
+    private async Task EditClick(Guid id)
+    {
+        var parameters = new DialogParameters { { nameof(CreditoIntraDiaFormDialog.CreditoId), id } };
+        var dialog = await _dialogService.ShowAsync<CreditoIntraDiaFormDialog>("Editar Crédito Intradía", parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled) await RefreshData();
+    }
+
+    private void DetailClick(Guid id) => _navManager.NavigateTo("." + PageRoute.IntradiaDetail + $"/{id}");
+}

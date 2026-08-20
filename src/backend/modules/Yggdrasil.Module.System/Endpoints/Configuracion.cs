@@ -17,7 +17,7 @@ public class Configuracion : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Sistema - Configuración");
+            .WithTags("Sistema");
 
         #region Empresa
         group.MapGet("empresa/{id}", GetEmpresaById)
@@ -28,8 +28,8 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
-        group.MapGet("empresa/", GetPaginatedEmpresa)
-            .WithName("GetPaginatedEmpresa")
+        group.MapGet("empresa/", GetEmpresas)
+            .WithName("GetEmpresas")
             .WithSummary("Obtiene empresas paginadas y filtradas")
             .Produces<ApiResponseDto<PagedResultDto<EmpresaListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
@@ -74,7 +74,7 @@ public class Configuracion : EndpointGroupBase
         return result.ToCustomMinimalApiResult();
     }
 
-    public async Task<IResult> GetPaginatedEmpresa(
+    public async Task<IResult> GetEmpresas(
         [FromServices] IQueryMediator queryMediator,
         [FromQuery] string? q = null,
         [FromQuery] int page = 1,

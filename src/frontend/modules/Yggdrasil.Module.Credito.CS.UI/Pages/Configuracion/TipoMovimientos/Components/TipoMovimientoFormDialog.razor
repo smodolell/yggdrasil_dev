@@ -1,0 +1,90 @@
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="Guardar" id="TipoMovimientoForm">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.Clave"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Clave"
+                                  For="@(() => _model.Clave)" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="_model.NomTipoMovimiento"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Nombre"
+                                  For="@(() => _model.NomTipoMovimiento)" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch @bind-Value="_model.Activo" Label="¿Activo?" Color="Color.Primary" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="TipoMovimientoForm">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="Cerrar"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+    [Parameter] public int? TipoMovimientoId { get; set; }
+
+    private TipoMovimientoCsEditDto _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (TipoMovimientoId.HasValue)
+        {
+            try
+            {
+                var result = await _configuracionApi.GetCSTipoMovimientoByIdAsync(TipoMovimientoId.Value);
+                _model = result.Data ?? new();
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowErrorDialog(ex, "Error al cargar el tipo de movimiento");
+            }
+        }
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            if (TipoMovimientoId.HasValue)
+            {
+                await _configuracionApi.UpdateCSTipoMovimientoAsync(TipoMovimientoId.Value, _model);
+                _snackbarService.Add("Tipo de movimiento actualizado correctamente", Severity.Success);
+            }
+            else
+            {
+                await _configuracionApi.CreateCSTipoMovimientoAsync(_model);
+                _snackbarService.Add("Tipo de movimiento creado correctamente", Severity.Success);
+            }
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al guardar el tipo de movimiento");
+        }
+    }
+
+    private void Cerrar() => MudDialog?.Close(DialogResult.Ok(false));
+}

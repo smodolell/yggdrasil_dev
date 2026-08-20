@@ -1,15 +1,29 @@
-﻿
+﻿@implements IAsyncDisposable
 
 <MudIconButton Icon="@(_layoutState.NavIsOpen ? IconsConstants.MenuCollapsed : IconsConstants.MenuExpand)" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
 @code {
+    private Lazy<Task<IJSObjectReference>> _drawerModuleTask = null!;
 
-    
+    protected override void OnInitialized()
+    {
+        _drawerModuleTask = new(() => _jsRuntime.InvokeAsync<IJSObjectReference>
+            ("import", "./_content/Yggdrasil.Module.Layout.UI/js/drawer.js").AsTask());
+    }
+
     async Task DrawerToggle()
     {
         _layoutState.NavIsOpen = !_layoutState.NavIsOpen;
 
-        var drawerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>
-            ("import", "./_content/Yggdrasil.Module.Layout.UI/js/drawer.js");
+        var drawerModule = await _drawerModuleTask.Value;
         await drawerModule.InvokeVoidAsync("handleDrawerToggled", _layoutState.NavIsOpen);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_drawerModuleTask.IsValueCreated)
+        {
+            var module = await _drawerModuleTask.Value;
+            await module.DisposeAsync();
+        }
     }
 }

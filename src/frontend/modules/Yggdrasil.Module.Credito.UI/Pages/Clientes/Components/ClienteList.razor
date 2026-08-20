@@ -1,9 +1,4 @@
-@using Yggdrasil.Module.Credito.UI.Services.Clientes
-@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
-@using Yggdrasil.Module.Credito.UI.Services.SelectLists
-@inject IClientesApi _clientesApi
-@inject ISelectListsApi _selectListService
-@inject IDialogService _dialogService
+﻿@inject IDialogService _dialogService
 @inject ISnackbar _snackbarService
 @inject NavigationManager _navManager
 
@@ -169,8 +164,8 @@
         <Columns>
             <!-- Alineaciones y anchos optimizados para legibilidad corporativa -->
             <PropertyColumn Title="Cliente / Razón Social" Property="x => x.NombreCliente" SortBy="x => x.NombreCliente" />
-            <PropertyColumn Title="RFC" Property="x => x.RFC" HeaderStyle="width:130px;" Class="font-monospace" />
-            <PropertyColumn Title="CURP" Property="x => x.CURP" HeaderStyle="width:150px;" Class="font-monospace" />
+            <PropertyColumn Title="RFC" Property="x => x.Rfc" HeaderStyle="width:130px;" Class="font-monospace" />
+            <PropertyColumn Title="CURP" Property="x => x.Curp" HeaderStyle="width:150px;" Class="font-monospace" />
             <PropertyColumn Title="Perfil Financiero" Property="x => x.NomPerfil" HeaderStyle="width:180px;" />
             <TemplateColumn Title="Fecha Alta" HeaderStyle="width:140px; text-align: center;" CellClass="text-center" SortBy="x => x.FechaAltaCliente">
                 <CellTemplate>
@@ -235,14 +230,14 @@
         try
         {
             var perfilesTask = _clientesApi.GetPerfilesActivosAsync();
-            var generosTask = _selectListService.GetGenerosAsync();
-            var edosCivilesTask = _selectListService.GetEstadosCivilesAsync();
+            var generosTask = _selectListCreditoApi.GetGeneroSelectListAsync(string.Empty, null);
+            var edosCivilesTask = _selectListCreditoApi.GetEdoCivilSelectListAsync(string.Empty, null);
 
             await Task.WhenAll(perfilesTask, generosTask, edosCivilesTask);
 
-            _listPerfiles = perfilesTask.Result?.Data;
-            _listGeneros = generosTask.Result?.Data;
-            _listEdosCiviles = edosCivilesTask.Result?.Data;
+            _listPerfiles = perfilesTask.Result!.Data.ToList();
+            _listGeneros = generosTask.Result.Data.ToList();
+            _listEdosCiviles = edosCivilesTask.Result?.Data.ToList();
         }
         catch (Exception ex)
         {
@@ -263,8 +258,8 @@
             var sortColumn = sortDef?.SortBy ?? nameof(PersonaListItemDto.FechaAltaCliente);
             var sortDesc = sortDef?.Descending ?? true;
 
-            var result = await _clientesApi.GetClientes(
-                q: _searchText,
+            var result = await _clientesApi.GetClientesAsync(
+                q: _searchText ?? string.Empty,
                 page: gridState.Page + 1,
                 pageSize: gridState.PageSize,
                 sortColumn: sortColumn,
@@ -272,6 +267,7 @@
                 perfilId: _perfilId,
                 generoId: _generoId,
                 edoCivilId: _edoCivilId,
+                lugarNacimientoId: null,
                 fechaAltaClienteStart: _dateRange.Start?.Date,
                 fechaAltaClienteEnd: _dateRange.End?.Date.AddDays(1).AddSeconds(-1)
             );
@@ -306,9 +302,9 @@
             {
                 try
                 {
-                    var result = await _clientesApi.DeletePersona(item.Id);
+                    var result = await _clientesApi.DeletePersonaAsync(item.Id);
                     await RefreshData();
-                    _snackbarService.Add(result.Content?.Message ?? "Cliente eliminado", Severity.Success);
+                    _snackbarService.Add(result.Message ?? "Cliente eliminado", Severity.Success);
                 }
                 catch (Exception ex)
                 {

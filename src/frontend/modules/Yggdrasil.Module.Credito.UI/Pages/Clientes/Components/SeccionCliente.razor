@@ -1,14 +1,10 @@
 ﻿@attribute [SeccionPersona(SeccionPersonaConstants.INFORMACION_CLIENTE, SeccionPersonaConstants.INFORMACION_CLIENTE_LABEL)]
 @implements ISeccionPersonaCreate
 @implements ISeccionPersonaEdit
-@using Yggdrasil.Module.Credito.UI.Services.Clientes
-@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
-@using Yggdrasil.Module.Credito.UI.Services.SelectLists
-@inject IClientesApi _clienteService;
-@inject ISelectListsApi _selectListService;
+@using ResultArdalis = Ardalis.Result.Result
 
 <EditForm Model="@_model" @ref="_editForm">
-    <FluentValidator AsyncMode =" true" />
+    <FluentValidator AsyncMode=" true" />
     <MudGrid>
         <MudItem xs="12" sm="6" md="3">
             <MudSelect Margin="Margin.Dense"
@@ -60,27 +56,27 @@
             </MudTextField>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudTextField @bind-Value="_model.RFC"
+            <MudTextField @bind-Value="_model.Rfc"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Label="RFC"
-                          For="@(() => _model.RFC)">
+                          For="@(() => _model.Rfc)">
             </MudTextField>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudTextField @bind-Value="_model.NSS"
+            <MudTextField @bind-Value="_model.Nss"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Label="NSS"
-                          For="@(() => _model.NSS)">
+                          For="@(() => _model.Nss)">
             </MudTextField>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudTextField @bind-Value="_model.CURP"
+            <MudTextField @bind-Value="_model.Curp"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Label="CURP"
-                          For="@(() => _model.CURP)">
+                          For="@(() => _model.Curp)">
             </MudTextField>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
@@ -176,42 +172,42 @@
     {
         if (_listTipoPersona == null)
         {
-            var result = await _selectListService.GetTiposPersonaAsync();
-            _listTipoPersona = result.Data;
+            var result = await _selectListCreditoApi.GetTipoPersonaSelectListAsync(string.Empty, null);
+            _listTipoPersona = result.Data.ToList();
         }
 
         if (_listEdoCivil == null)
         {
-            var result = await _selectListService.GetEstadosCivilesAsync();
-            _listEdoCivil = result.Data;
+            var result = await _selectListCreditoApi.GetEdoCivilSelectListAsync(string.Empty, null);
+            _listEdoCivil = result.Data.ToList();
         }
 
         if (_listGenero == null)
         {
-            var result = await _selectListService.GetGenerosAsync();
-            _listGenero = result.Data;
+            var result = await _selectListCreditoApi.GetGeneroSelectListAsync(string.Empty, null);
+            _listGenero = result.Data.ToList();
         }
 
         if (PersonaId != 0)
         {
-            var result = await _clienteService.GetSeccionClienteEdit(PersonaId);
+            var result = await _clientesApi.GetSeccionClienteEditAsync(PersonaId);
             _model = result.Data!;
-            _showPersonaJuridica = _showPersonaJuridica = _model.TipoPersonaId != null && _model.TipoPersonaId == 1;
+            _showPersonaJuridica = _showPersonaJuridica =  _model.TipoPersonaId == 1;
         }
     }
 
 
-    public async Task<Result> Create(int personaId)
+    public async Task<ResultArdalis> Create(int personaId)
     {
         _model.PersonaId = personaId;
-        var result = await _clienteService.SaveSeccionClienteEdit(personaId, _model);
-        return Result.Success();
+        var result = await _clientesApi.SaveSeccionClienteEditAsync(personaId, _model);
+        return ResultArdalis.Success();
     }
 
-    public async Task<Result> Save()
+    public async Task<ResultArdalis> Save()
     {
-        var result = await _clienteService.SaveSeccionClienteEdit(PersonaId, _model);
-        return Result.Success();
+        var result = await _clientesApi.SaveSeccionClienteEditAsync(PersonaId, _model);
+        return ResultArdalis.Success();
     }
 
     public async Task ValidateAsync()
@@ -233,7 +229,7 @@
     private void ChangeTipoPersona(int? value)
     {
         if (_model == null) return;
-        _model.TipoPersonaId = value;
+        _model.TipoPersonaId = value ?? 0;
         _showPersonaJuridica = _model.TipoPersonaId != null && _model.TipoPersonaId == 1;
     }
 

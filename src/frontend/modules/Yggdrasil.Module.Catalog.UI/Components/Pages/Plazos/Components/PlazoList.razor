@@ -1,7 +1,4 @@
-﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-<MudDataGrid Outlined="true"
+﻿<MudDataGrid Outlined="true"
              Dense="true"
              Bordered="true"
              ServerData="GetTableData"
@@ -54,11 +51,13 @@
     private async Task<GridData<PlazoListItemDto>> GetTableData(GridState<PlazoListItemDto> gridState, CancellationToken cancellationToken)
     {
         var _pageNumber = (gridState.Page + 1);
-        var paginatedList = await _catalogosApi.GetPlazos(
+        var paginatedList = await _catalogoApi.PlazoAsync(
             _valorPlazo,
             _activo,
             _pageNumber,
-            gridState.PageSize
+            gridState.PageSize,
+            nameof(PlazoListItemDto.Id),
+            false
         );
         return new GridData<PlazoListItemDto>()
         {

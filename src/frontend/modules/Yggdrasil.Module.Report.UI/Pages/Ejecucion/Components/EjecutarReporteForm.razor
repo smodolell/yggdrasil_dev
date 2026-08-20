@@ -1,0 +1,139 @@
+@using Yggdrasil.ApiClient
+@using Yggdrasil.ApiClient.Contracts
+
+@using Microsoft.JSInterop
+@inject IReportesApi _reportesApi;
+@inject IJSRuntime _jsRuntime;
+
+<MudPaper Class="pa-6" Elevation="2">
+    <MudText Typo="Typo.h5" GutterBottom="true">@Configuracion.NomReporte</MudText>
+    
+    <EditForm Model="Configuracion" OnValidSubmit="ExecuteReporte">
+        <MudGrid>
+            @foreach (var param in Configuracion.Parametros.OrderBy(p => p.Order))
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    @if (param.InputId == InputTypeString)
+                    {
+                        <MudTextField @bind-Value="param.Value" Label="@param.Display" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    }
+                    else if (param.InputId == InputTypeDatePicker) // DatePicker
+                    {
+                        <MudDatePicker @bind-Date="param.ValueDateTime" Label="@param.Display" Variant="Variant.Outlined" Margin="Margin.Dense" DateFormat="dd/MM/yyyy" />
+                    }
+                    else if (param.InputId == InputTypeCheckBox) // CheckBox
+                    {
+                        <MudCheckBox @bind-Value="param.ValueBoolean" Label="@param.Display" Color="Color.Primary" />
+                    }
+                    else if (param.InputId == InputTypeDropDownList) // DropDownList
+                    {
+                        <MudSelect @bind-Value="param.Value" T="string" Label="@param.Display" Variant="Variant.Outlined" Margin="Margin.Dense">
+                            <MudSelectItem T="string" Value="@null">-- Seleccionar --</MudSelectItem>
+                            @foreach (var option in param.DropDownList)
+                            {
+                                <MudSelectItem T="string" Value="@(option.Value.ToString())">@option.Text</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        @* Default to text box *@
+                        <MudTextField @bind-Value="param.Value" Label="@param.Display" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    }
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-6">
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlayArrow">
+                Ejecutar y Descargar
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Schedule" OnClick="AutoSchedule">
+                Automatizar
+            </MudButton>
+            <MudTooltip Text="Guarda una copia del archivo generado en el servidor">
+                <MudCheckBox @bind-Value="_guardarArchivo" Label="Guardar archivo" Color="Color.Primary" />
+            </MudTooltip>
+            <MudSpacer />
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="() => OnCancel.InvokeAsync()">
+                Cancelar
+            </MudButton>
+        </MudStack>
+    </EditForm>
+</MudPaper>
+
+@code {
+    private const int InputTypeString = 1;
+    private const int InputTypeDatePicker = 2;
+    private const int InputTypeCheckBox = 3;
+    private const int InputTypeDropDownList = 4;
+
+    [Parameter]
+    public ReporteExecuteDto Configuracion { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private bool _guardarArchivo = false;
+
+    private async Task ExecuteReporte()
+    {
+        try
+        {
+            var response = await _reportesApi.EjecutarReporteAsync(_guardarArchivo,Configuracion);
+
+            var content = response.Data.Data;
+            string fileName = response.Data.FileName ?? "reporte.xlsx";
+            fileName = fileName.Trim('\"');
+
+            string contentType = response.Data.ContentType ?? "application/octet-stream";
+            
+            await BlazorDownloadFile(fileName, content, contentType);
+            
+            _snackbarService.Add("Reporte generado exitosamente.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add($"Error al ejecutar reporte: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task BlazorDownloadFile(string fileName, byte[] data, string contentType)
+    {
+        string base64 = Convert.ToBase64String(data);
+        string url = $"data:{contentType};base64,{base64}";
+
+        // Wrap the logic in an IIFE to prevent polluting the global JS window space
+        var script = $@"
+            (function() {{
+                var a = document.createElement('a');
+                a.href = '{url}';
+                a.download = '{fileName}';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }})();
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", script);
+    }
+
+    private async Task AutoSchedule()
+    {
+        try
+        {
+            var result = await _reportesApi.AutomatizarReporteAsync(Configuracion);
+            if (result.Success)
+            {
+                _snackbarService.Add(result.Message ?? "Reporte automatizado con éxito.", Severity.Success);
+            }
+            else
+            {
+                _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error al automatizar reporte", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+}

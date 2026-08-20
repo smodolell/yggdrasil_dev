@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Yggdrasil.Blazor.Extensions;
 using Yggdrasil.Module.Layout.UI.Services.Layout;
 using Yggdrasil.Module.Layout.UI.Services.Layout.DTOs;
 
@@ -11,10 +12,25 @@ public partial class NavMenu
 
     public HashSet<AccessPointDto>? NavMenuItems { get; set; }
 
+    private string _userName = string.Empty;
+    private string _fullName = string.Empty;
+
     protected override void OnInitialized()
     {
-        _layoutState.NavIsOpenEvent += () => StateHasChanged();
+        _layoutState.NavIsOpenEvent += OnNavIsOpenChanged;
         _themeState.IsDarkChangeEvent += OnThemeChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await _authState.GetAuthenticationStateAsync();
+        var user = authState.User;
+        _userName = user.GetUserName();
+        _fullName = user.GetFullName();
+    }
+    private void OnNavIsOpenChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
     private void OnThemeChanged()
     {
@@ -42,6 +58,7 @@ public partial class NavMenu
 
     public void Dispose()
     {
+        _layoutState.NavIsOpenEvent -= OnNavIsOpenChanged;
         _themeState.IsDarkChangeEvent -= OnThemeChanged;
     }
 }

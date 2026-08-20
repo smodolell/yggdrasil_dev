@@ -23,4 +23,12 @@ public static class ValidationExtensions
 
         editContext.NotifyValidationStateChanged();
     }
+
+    public static string GetSnackbarMessage(this YggdrasilApiException exception)
+    {
+        if (exception.Errors.Count > 0)
+            return string.Join(" | ", exception.Errors);
+
+        return !string.IsNullOrWhiteSpace(exception.ApiMessage) ? exception.ApiMessage! : exception.Message;
+    }
 }

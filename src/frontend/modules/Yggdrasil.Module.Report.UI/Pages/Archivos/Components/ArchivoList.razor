@@ -1,0 +1,166 @@
+@using Yggdrasil.ApiClient
+@using Yggdrasil.ApiClient.Contracts
+@using Microsoft.JSInterop
+@inject IReportesApi _reportesApi
+@inject IJSRuntime _jsRuntime
+
+<MudDataGrid Outlined="true"
+             Dense="true"
+             Bordered="true"
+             ServerData="GetTableData"
+             FixedHeader="true"
+             SortMode="SortMode.Single"
+             @ref="_dataGridRef"
+             T="ArchivoListItemDto">
+    <ToolBarContent>
+        <MudAutocomplete T="SelectReporteDto"
+                         Label="Filtrar por Reporte"
+                         SearchFunc="@SearchReportes"
+                         Value="@_reporteFiltro"
+                         ValueChanged="OnReporteFiltroChanged"
+                         ToStringFunc="@(e => e == null ? null : e.NomReporte)"
+                         Clearable="true"
+                         ResetValueOnEmptyText="true"
+                         Placeholder="Todos los reportes..."
+                         AdornmentIcon="@Icons.Material.Filled.FilterList"
+                         AdornmentColor="Color.Secondary"
+                         Style="min-width:300px" />
+        <MudSpacer />
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Title="Reporte" Property="x => x.NomReporte" />
+        <PropertyColumn Title="Nombre Archivo" Property="x => x.NombreArchivo" />
+        <PropertyColumn Title="Extensión" Property="x => x.Extension" />
+        <PropertyColumn Title="Fecha Creación" Property="x => x.FechaCreacion" Format="dd/MM/yyyy HH:mm" />
+        <PropertyColumn Title="Parámetros" Property="x => x.LogParameters" />
+        <TemplateColumn HeaderStyle="white-space:nowrap;width:100px;" StickyRight="true" Resizable="false" Title="Acciones">
+            <CellTemplate>
+                <MudStack Row="true" Justify="Justify.FlexEnd">
+                    <MudTooltip Text="Descargar">
+                        <MudIconButton Size="@MudBlazor.Size.Small"
+                                       Icon="@Icons.Material.Filled.Download"
+                                       Color="Color.Primary"
+                                       OnClick="() => DownloadClick(context.Item)" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Size="@MudBlazor.Size.Small"
+                                       Icon="@Icons.Material.Outlined.Delete"
+                                       Color="Color.Error"
+                                       OnClick="() => DeleteClick(context.Item)" />
+                    </MudTooltip>
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="ArchivoListItemDto" />
+    </PagerContent>
+    <NoRecordsContent>
+        <MudText>No hay <strong>archivos generados</strong></MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+@code {
+    private MudDataGrid<ArchivoListItemDto> _dataGridRef = null!;
+    private SelectReporteDto? _reporteFiltro;
+
+    private async Task<GridData<ArchivoListItemDto>> GetTableData(GridState<ArchivoListItemDto> gridState, CancellationToken cancellationToken)
+    {
+        var pageNumber = gridState.Page + 1;
+        var sortBy = nameof(ArchivoListItemDto.FechaCreacion);
+        var sortDescending = true;
+
+        var sortDef = gridState.SortDefinitions.FirstOrDefault();
+        if (sortDef != null)
+        {
+            sortBy = sortDef.SortBy;
+            sortDescending = sortDef.Descending;
+        }
+
+        var result = await _reportesApi.GetArchivosAsync(
+            _reporteFiltro?.ReporteId,
+            pageNumber,
+            gridState.PageSize,
+            sortBy,
+            sortDescending);
+
+        return new GridData<ArchivoListItemDto>
+        {
+            TotalItems = result.Data!.TotalCount,
+            Items = result.Data!.Results
+        };
+    }
+
+    private async Task<IEnumerable<SelectReporteDto>> SearchReportes(string value, CancellationToken cancellationToken)
+    {
+        var result = await _reportesApi.SearchReportesAsync(value);
+        return result.Success && result.Data != null ? result.Data : [];
+    }
+
+    private async Task OnReporteFiltroChanged(SelectReporteDto? reporte)
+    {
+        _reporteFiltro = reporte;
+        await _dataGridRef.ReloadServerData();
+    }
+
+    private async Task DownloadClick(ArchivoListItemDto item)
+    {
+        try
+        {
+            var response = await _reportesApi.DownloadArchivoAsync(item.Id);
+
+            var content = response.Data.Data;
+            var fileName =response.Data.FileName ?? item.NombreArchivo;
+            fileName = fileName.Trim('"');
+
+            var contentType = response.Data.ContentType ?? "application/octet-stream";
+            await BlazorDownloadFile(fileName, content, contentType);
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add($"Error al descargar: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task DeleteClick(ArchivoListItemDto item)
+    {
+        await _dialogService.ShowConfirmDialog(
+            $"¿Desea eliminar el archivo \"{item.NombreArchivo}\"? Esta acción no se puede deshacer.",
+            "Eliminar Archivo",
+            async (_) =>
+            {
+                try
+                {
+                    var result = await _reportesApi.DeleteArchivoAsync(item.Id);
+                    if (result.Success)
+                    {
+                        await _dataGridRef.ReloadServerData();
+                        _snackbarService.Add(result.Message ?? "Archivo eliminado.", Severity.Success);
+                    }
+                    else
+                    {
+                        _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error al eliminar.", Severity.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _snackbarService.Add(ex.Message, Severity.Error);
+                }
+            });
+    }
+
+    private async Task BlazorDownloadFile(string fileName, byte[] data, string contentType)
+    {
+        var base64 = Convert.ToBase64String(data);
+        var url = $"data:{contentType};base64,{base64}";
+        var script = $@"
+            var a = document.createElement('a');
+            a.href = '{url}';
+            a.download = '{fileName}';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", script);
+    }
+}

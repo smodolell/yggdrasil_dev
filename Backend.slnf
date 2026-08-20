@@ -1,0 +1,23 @@
+{
+  "solution": {
+    "path": "Yggdrasil_Dev.slnx",
+    "projects": [
+      "src\\backend\\Yggdrasil.ApiService\\Yggdrasil.ApiService.csproj",
+      "src\\backend\\Yggdrasil.Common\\Yggdrasil.Common.csproj",
+      "src\\backend\\Yggdrasil.Domain\\Yggdrasil.Domain.csproj",
+      "src\\backend\\Yggdrasil.Infrastructure\\Yggdrasil.Infrastructure.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Audit\\Yggdrasil.Module.Audit.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Auth\\Yggdrasil.Module.Auth.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Catalog\\Yggdrasil.Module.Catalog.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Cobranza\\Yggdrasil.Module.Cobranza.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Cotizador\\Yggdrasil.Module.Cotizador.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Credito\\Yggdrasil.Module.Credito.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Operacion\\Yggdrasil.Module.Operacion.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Originacion\\Yggdrasil.Module.Originacion.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.Report\\Yggdrasil.Module.Report.csproj",
+      "src\\backend\\modules\\Yggdrasil.Module.System\\Yggdrasil.Module.System.csproj",
+      "src\\frontend\\Yggdrasil.ApiClient\\Yggdrasil.ApiClient.csproj",
+      "tools\\Yggdrasil.Tools\\Yggdrasil.Tools.csproj"
+    ]
+  }
+}

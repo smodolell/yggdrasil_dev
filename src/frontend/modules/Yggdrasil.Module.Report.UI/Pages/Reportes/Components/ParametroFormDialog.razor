@@ -1,0 +1,148 @@
+@using Yggdrasil.ApiClient
+@using Yggdrasil.ApiClient.Contracts
+
+@inject IReportesApi _reportesApi;
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="SaveSubmit" id="@_formId">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6">
+                    <MudTextField T="string" @bind-Value="_model.NomParametro"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="true"
+                                  Label="Nombre del Parámetro" For="@(() => _model.NomParametro)">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6">
+                    <MudTextField @bind-Value="_model.TipoDato"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="true"
+                                  Label="Tipo Dato" For="@(() => _model.TipoDato)">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="12">
+                    <MudTextField @bind-Value="_model.Display"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Etiqueta Mostrar" For="@(() => _model.Display)">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6">
+                    <MudSelect @bind-Value="_model.InputId"
+                               T="int?"
+                               Label="Tipo Control"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               For="@(() => _model.InputId)">
+                        <MudSelectItem T="int?" Value="null">Ninguno / Automático</MudSelectItem>
+                        <MudSelectItem T="int?" Value="1">Text Box</MudSelectItem>
+                        <MudSelectItem T="int?" Value="2">Date Picker</MudSelectItem>
+                        <MudSelectItem T="int?" Value="3">Check Box</MudSelectItem>
+                        <MudSelectItem T="int?" Value="4">Drop Down List</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6">
+                    <MudNumericField @bind-Value="_model.Order"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Label="Orden" For="@(() => _model.Order)">
+                    </MudNumericField>
+                </MudItem>
+                
+                @if (_model.InputId == InputTypeDropDownList)
+                {
+                    <MudItem xs="12" sm="12" md="4">
+                        <MudTextField @bind-Value="_model.TablaRef"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Label="Tabla o EndPoint Ref" For="@(() => _model.TablaRef)">
+                        </MudTextField>
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4">
+                        <MudTextField @bind-Value="_model.ColumnaValor"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Label="Propiedad Valor" For="@(() => _model.ColumnaValor)">
+                        </MudTextField>
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4">
+                        <MudTextField @bind-Value="_model.ColumnaTexto"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Label="Propiedad Texto" For="@(() => _model.ColumnaTexto)">
+                        </MudTextField>
+                    </MudItem>
+                }
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" FullWidth="false"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="@_formId">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   FullWidth="false"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cancelar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public Guid ParametroId { get; set; }
+
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    private readonly string _formId = $"form-param-{Guid.NewGuid()}";
+    private ParametroEditDto _model = new ParametroEditDto();
+
+    private const int InputTypeString = 1;
+    private const int InputTypeDatePicker = 2;
+    private const int InputTypeCheckBox = 3;
+    private const int InputTypeDropDownList = 4;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await _reportesApi.GetParametroByIdAsync(ParametroId);
+        if (result.Success)
+        {
+            _model = result.Data!;
+        }
+    }
+
+    private async Task SaveSubmit()
+    {
+        try
+        {
+            var result = await _reportesApi.UpdateParametroAsync(ParametroId, _model);
+            if (result.Success)
+            {
+                _snackbarService.Add(result.Message, Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error al actualizar parámetro", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}

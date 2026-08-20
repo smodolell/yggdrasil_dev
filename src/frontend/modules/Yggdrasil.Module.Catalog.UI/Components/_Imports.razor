@@ -14,6 +14,9 @@
 @using Yggdrasil.Blazor.Extensions
 @using Yggdrasil.Module.Catalog.UI.Constants
 
+@inject ICatalogoApi _catalogoApi;
+@inject ICatalogoSelectListsApi _selectListCatalogoApi;
+
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbarService;
 @inject NavigationManager _navManager;

@@ -1,0 +1,291 @@
+@attribute [Route(PageRoute.CobranzaPage)]
+@attribute [AccessPoint(AppMenu.MenuCobranza, "Caja Manual")]
+@using Yggdrasil.Module.Cobranza.UI.Pages.Cobranza.Components
+@using Yggdrasil.Module.Cobranza.UI.Services.Cobranza
+@using Yggdrasil.Module.Cobranza.UI.Services.Cobranza.DTOs
+@using Yggdrasil.Module.Cobranza.UI.Services.Creditos.DTOs
+@using Yggdrasil.Module.Cobranza.UI.Services.Catalogos
+@using Yggdrasil.Module.Cobranza.UI.Services.Catalogos.DTOs
+@inject ICobranzaApi _cobranzaApi
+@inject ICatalogosApi _catalogosApi
+
+<PageHeader Title="Caja Manual" Icon="@AppMenu.MenuCobranzaIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+@* ── Selector de crédito ─────────────────────────────────────────────────── *@
+<MudPaper Outlined="true" Class="pa-4 mb-4">
+    <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-3">Seleccionar Crédito</MudText>
+    <SelectCredito @ref="_selectCreditoRef"
+                   Label="Buscar crédito activo..."
+                   EstatusCreditoId="2"
+                   OnCreditoSelected="OnCreditoSelected" />
+</MudPaper>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+
+@if (_creditoSeleccionado != null && _cajaManual != null)
+{
+    @* ── Movimientos pendientes ──────────────────────────────────────────── *@
+    <MudPaper Outlined="true" Class="pa-4 mb-4">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+            <div>
+                <MudText Typo="Typo.subtitle1" Class="font-weight-bold">
+                    Movimientos Pendientes — @_creditoSeleccionado.ClaveCredito
+                </MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">@_creditoSeleccionado.NomCliente</MudText>
+            </div>
+            <MudTooltip Text="Actualizar">
+                <MudIconButton Icon="@Icons.Material.Outlined.Refresh"
+                               Size="Size.Small"
+                               OnClick="RecargarMovimientos"
+                               Disabled="_loading" />
+            </MudTooltip>
+        </MudStack>
+
+        @if (_cajaManual.Items.Count == 0)
+        {
+            <MudAlert Severity="Severity.Success" Elevation="0">
+                No hay movimientos pendientes de pago para este crédito.
+            </MudAlert>
+        }
+        else
+        {
+            <MudTable T="CajaManualItemDto" Items="_cajaManual.Items"
+                      MultiSelection="true"
+                      SelectedItems="_movimientosSeleccionados"
+                      SelectedItemsChanged="OnSelectionChanged"
+                      Dense="true" Outlined="true" Elevation="0" Class="border rounded-lg">
+                <HeaderContent>
+                    <MudTh>No. Pago</MudTh>
+                    <MudTh>Descripción</MudTh>
+                    <MudTh Style="text-align:center;">Vencimiento</MudTh>
+                    <MudTh Style="text-align:right;">Capital</MudTh>
+                    <MudTh Style="text-align:right;">Interés</MudTh>
+                    <MudTh Style="text-align:right;">IVA</MudTh>
+                    <MudTh Style="text-align:right;">Total</MudTh>
+                    <MudTh Style="text-align:right;">Sdo. Capital</MudTh>
+                    <MudTh Style="text-align:right;">Sdo. Interés</MudTh>
+                    <MudTh Style="text-align:right;">Sdo. IVA</MudTh>
+                    <MudTh Style="text-align:right;">Sdo. Total</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="No. Pago">@context.NoPago</MudTd>
+                    <MudTd DataLabel="Descripción">@context.DescMovimiento</MudTd>
+                    <MudTd DataLabel="Vencimiento" Style="text-align:center;">@context.FechaVencimiento.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd DataLabel="Capital" Style="text-align:right;">@context.Capital.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Interés" Style="text-align:right;">@context.Interes.ToString("N2")</MudTd>
+                    <MudTd DataLabel="IVA" Style="text-align:right;">@context.Iva.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Total" Style="text-align:right;">@context.Total.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Sdo. Capital" Style="text-align:right;">@context.SaldoCapital.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Sdo. Interés" Style="text-align:right;">@context.SaldoInteres.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Sdo. IVA" Style="text-align:right;">@context.SaldoIva.ToString("N2")</MudTd>
+                    <MudTd DataLabel="Sdo. Total" Style="text-align:right; font-weight:600;">@context.SaldoTotal.ToString("N2")</MudTd>
+                </RowTemplate>
+                <FooterContent>
+                    <MudTd colspan="7" Style="text-align:right; font-weight:700;">Total pendiente</MudTd>
+                    <MudTd Style="text-align:right; font-weight:700;">@_cajaManual.Items.Sum(m => m.Total).ToString("N2")</MudTd>
+                    <MudTd colspan="2" />
+                    <MudTd Style="text-align:right; font-weight:700;">@_cajaManual.Items.Sum(m => m.SaldoTotal).ToString("N2")</MudTd>
+                </FooterContent>
+            </MudTable>
+        }
+    </MudPaper>
+
+    @* ── Registrar pago ──────────────────────────────────────────────────── *@
+    @if (_cajaManual.Items.Count > 0)
+    {
+        <MudPaper Outlined="true" Class="pa-4 mb-4">
+            <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-3">Registrar Pago</MudText>
+            @if (_movimientosSeleccionados.Count > 0)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Spacing="2">
+                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Outlined.CheckBox">
+                        @_movimientosSeleccionados.Count movimiento(s) seleccionado(s)
+                    </MudChip>
+                    <MudText Typo="Typo.body2">
+                        Total seleccionado: <strong>@_movimientosSeleccionados.Sum(m => m.SaldoTotal).ToString("N2")</strong>
+                    </MudText>
+                </MudStack>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3" Elevation="0">
+                    Seleccione al menos un movimiento de la tabla para registrar el pago.
+                </MudAlert>
+            }
+            <EditForm Model="_pagoModel" OnValidSubmit="RegistrarPago">
+                <FluentValidator />
+                <ValidationSummary></ValidationSummary>
+                <MudGrid>
+                    <MudItem xs="12" sm="4">
+                        <MudNumericField T="decimal"
+                                         @bind-Value="_pagoModel.Monto"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Label="Monto a Pagar"
+                                         Format="N2"
+                                         For="@(() => _pagoModel.Monto)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker @bind-Date="_fechaPago"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Label="Fecha de Pago"
+                                       MinDate="_cajaManual.FechaMinima"
+                                       Editable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudSelect T="int"
+                                   @bind-Value="_pagoModel.TipoPagoId"
+                                   Margin="Margin.Dense"
+                                   Variant="Variant.Outlined"
+                                   Label="Tipo de Pago"
+                                   For="@(() => _pagoModel.TipoPagoId)">
+                            @foreach (var item in _listTiposPago)
+                            {
+                                <MudSelectItem T="int" Value="@item.Id">@item.NomTipoPago</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudStack Row="true" Justify="Justify.FlexEnd">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       ButtonType="ButtonType.Submit"
+                                       StartIcon="@Icons.Material.Outlined.Payments"
+                                       Disabled="_loading">
+                                Registrar Pago
+                            </MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+
+            @if (_pagoResultado != null)
+            {
+                <MudDivider Class="my-4" />
+                <MudAlert Severity="Severity.Success" Elevation="0">
+                    <MudText Typo="Typo.body2">
+                        <strong>Pago #@_pagoResultado.PagoId registrado.</strong> @_pagoResultado.Mensaje
+                    </MudText>
+                    <MudText Typo="Typo.body2">
+                        Aplicado: @_pagoResultado.MontoAplicado.ToString("N2")
+                        &nbsp;|&nbsp; Saldo a favor: @_pagoResultado.SaldoFavor.ToString("N2")
+                        &nbsp;|&nbsp; Movimientos liquidados: @_pagoResultado.MovimientosLiquidados
+                    </MudText>
+                </MudAlert>
+            }
+        </MudPaper>
+    }
+}
+
+@code {
+    private SelectCredito? _selectCreditoRef;
+    private CreditoBusquedaDto? _creditoSeleccionado;
+    private bool _loading;
+
+    private CajaManualDto? _cajaManual;
+    private PagoDto _pagoModel = new();
+    private HashSet<CajaManualItemDto> _movimientosSeleccionados = new();
+    private PagoResultDto? _pagoResultado;
+    private DateTime? _fechaPago = DateTime.Today;
+    private List<TipoPagoListItemDto> _listTiposPago = new();
+
+    private List<BreadcrumbItem> _items =
+    [
+        new BreadcrumbItem("Cobranza", href: null, icon: AppMenu.MenuCobranzaIcon, disabled: true),
+        new BreadcrumbItem("Caja Manual", href: null, disabled: true)
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await _catalogosApi.GetTiposPago();
+            _listTiposPago = result.Data ?? new();
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar tipos de pago");
+        }
+    }
+
+    private async Task OnCreditoSelected(CreditoBusquedaDto? credito)
+    {
+        _creditoSeleccionado = credito;
+        _cajaManual = null;
+        _pagoResultado = null;
+        _pagoModel = new PagoDto();
+
+        if (credito != null)
+            await CargarCajaManual();
+    }
+
+    private async Task CargarCajaManual()
+    {
+        if (_creditoSeleccionado == null) return;
+        _loading = true;
+        try
+        {
+            var result = await _cobranzaApi.GetCajaManual(creditoId: _creditoSeleccionado.Id);
+            _cajaManual = result.Content?.Data;
+            _pagoModel = new PagoDto
+            {
+                CreditoId = _creditoSeleccionado.Id,
+                FechaPago = _cajaManual?.FechaPago ?? DateTime.Today
+            };
+            _movimientosSeleccionados = new();
+            _fechaPago = _cajaManual?.FechaPago ?? DateTime.Today;
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar caja manual");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task RecargarMovimientos()
+    {
+        _pagoResultado = null;
+        await CargarCajaManual();
+    }
+
+    private void OnSelectionChanged(HashSet<CajaManualItemDto> items)
+    {
+        _movimientosSeleccionados = items;
+        _pagoModel.Monto = items.Sum(m => m.SaldoTotal);
+        _pagoModel.Movimientos = items.Select(m => m.MovimientoId).ToList();
+    }
+
+    private async Task RegistrarPago()
+    {
+        if (_creditoSeleccionado == null) return;
+        _pagoModel.CreditoId = _creditoSeleccionado.Id;
+        _pagoModel.FechaPago = _fechaPago ?? DateTime.Today;
+        _pagoModel.Movimientos = _movimientosSeleccionados.Select(m => m.MovimientoId).ToList();
+        _loading = true;
+        _pagoResultado = null;
+        try
+        {
+            var result = await _cobranzaApi.RegistrarPago(_pagoModel);
+            _pagoResultado = result.Content?.Data;
+            _snackbarService.Add("Pago registrado correctamente", Severity.Success);
+            await CargarCajaManual();
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al registrar pago");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

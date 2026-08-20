@@ -1,7 +1,4 @@
-﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-<MudDialog>
+﻿<MudDialog>
     <DialogContent>
 
         <EditForm Model="_model" OnValidSubmit="SaveSubmit" id="MyID">
@@ -22,10 +19,10 @@
                     </MudTextField>
                 </MudItem>
                 <MudItem xs="12" sm="12" md="12">
-                    <MudTextField @bind-Value="_model.CBUPrefix"
+                    <MudTextField @bind-Value="_model.CbuPrefix"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
-                                  Label="CBU Prefix" For="@(() => _model.CBUPrefix)">
+                                  Label="CBU Prefix" For="@(() => _model.CbuPrefix)">
                     </MudTextField>
                 </MudItem>
             </MudGrid>
@@ -74,7 +71,7 @@
 
     private async Task InitialData()
     {
-        var result = await _catalogosApi.GetBancoById(BancoId);
+        var result = await _catalogoApi.GetBancoByIdAsync(BancoId);
         if (result.Success)
         {
             _model = result.Data!;
@@ -88,29 +85,15 @@
         {
             if (BancoId == 0)
             {
-                var result = await _catalogosApi.CreateBanco(_model);
-                if (result.Success)
-                {
-                    _snackbarService.Add(result.Message, Severity.Success);
-                    MudDialog?.Close(DialogResult.Ok(true));
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
-                }
+                var result = await _catalogoApi.CreateBancoAsync(_model);
+                _snackbarService.Add(result.Message, Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
             }
             else
             {
-                var result = await _catalogosApi.UpdateBanco(BancoId, _model);
-                if (result.Success)
-                {
-                    _snackbarService.Add(result.Message, Severity.Success);
-                    MudDialog?.Close(DialogResult.Ok(true));
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
-                }
+                await _catalogoApi.UpdateBancoAsync(BancoId, _model);
+                _snackbarService.Add("Banco actualizado correctamente", Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
             }
 
 

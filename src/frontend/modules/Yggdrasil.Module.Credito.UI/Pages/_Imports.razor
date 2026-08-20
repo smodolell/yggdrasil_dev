@@ -10,13 +10,22 @@
 @using Yggdrasil.Blazor.Constants
 @using Yggdrasil.Blazor.Components.Dialogs
 @using Yggdrasil.Blazor.Components.Shared
-@using Yggdrasil.Blazor.DTOs
 @using Yggdrasil.Blazor.Helpers
 @using Yggdrasil.Blazor.Exceptions
 @using Yggdrasil.Blazor.Extensions
 @using Yggdrasil.Module.Credito.UI.Attributes
 @using Yggdrasil.Module.Credito.UI.Constants
 @using Yggdrasil.Module.Credito.UI.Interfaces
+
+@using Yggdrasil.ApiClient;
+@using Yggdrasil.ApiClient.Contracts;
+
+@inject ICreditoConfiguracionApi _configuracionApi;
+@inject ICreditoClientesApi _clientesApi;
+@inject ICreditoCreditosApi _creditosApi;
+@inject ICreditoSelectListsApi _selectListCreditoApi;
+@inject ICatalogoSelectListsApi _selectListCatalogoApi;
+@inject ICobranzaIntradiasApi _intradiasApi;
 
 
 @inject IDialogService _dialogService;

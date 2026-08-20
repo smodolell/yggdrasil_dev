@@ -1,11 +1,7 @@
-﻿@using Yggdrasil.Module.Credito.UI.Services.Configuacion
-@using Yggdrasil.Module.Credito.UI.Services.Configuacion.DTOs
-@inject IConfiguracionApi _configuracionApi;
-
-@if (_model != null)
+﻿@if (_model != null)
 {
     <EditForm Model="_model" OnValidSubmit="SaveSubmit" id="MyID">
-        <FluentValidator/>
+        <FluentValidator />
         <MudGrid>
             <MudItem xs="12" sm="12" md="12">
                 <MudTextField @bind-Value="_model.NomPerfil" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Nombre del Perfil" For="@(() => _model.NomPerfil)"></MudTextField>
@@ -30,42 +26,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for (int i = 0; i < _model.Items.Count(); i++)
-                    {
-                        var contador = i;
-                        <tr>
-                            <td>@_model.Items[contador].NomSeccion</td>
-                            <td>
-                                <MudStack Row="true" Justify="Justify.Center">
-                                    <MudSwitch @bind-Value="@_model.Items[contador].ActivoCreate"
-                                               ThumbIcon="@(_model.Items[contador].ActivoCreate == true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
-                                               ThumbIconColor="@(_model.Items[contador].ActivoCreate == true ? Color.Success : Color.Error)"
-                                               Disabled="!_model.Items[contador].IsCreate">
-
-                                    </MudSwitch>
-                                </MudStack>
-                            </td>
-                            <td>
-                                <MudStack Row="true" Justify="Justify.Center">
-                                    <MudSwitch @bind-Value="@_model.Items[contador].ActivoEdit"
-                                               ThumbIcon="@(_model.Items[contador].ActivoEdit == true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
-                                               ThumbIconColor="@(_model.Items[contador].ActivoEdit == true ? Color.Success : Color.Error)"
-                                               Disabled="!_model.Items[contador].IsEdit">
-                                    </MudSwitch>
-                                </MudStack>
-                            </td>
-                            <td>
-                                <MudStack Row="true" Justify="Justify.Center">
-                                    <MudSwitch @bind-Value="@_model.Items[contador].ActivoExtension"
-                                               ThumbIcon="@(_model.Items[contador].ActivoExtension == true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
-                                               ThumbIconColor="@(_model.Items[contador].ActivoExtension == true ? Color.Success : Color.Error)"
-                                               Disabled="!_model.Items[contador].IsExtension">
-                                    </MudSwitch>
-                                </MudStack>
-                            </td>
-                        </tr>
-
-                    }
+@foreach (SeccionEditDto item in _model.Items)
+{
+    <tr>
+        <td>@item.NomSeccion</td>
+        <td>
+            <MudStack Row="true" Justify="Justify.Center">
+                <MudSwitch @bind-Value="@item.ActivoCreate"
+                           ThumbIcon="@(item.ActivoCreate ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
+                           ThumbIconColor="@(item.ActivoCreate ? Color.Success : Color.Error)"
+                           Disabled="!item.IsCreate">
+                </MudSwitch>
+            </MudStack>
+        </td>
+        <td>
+            <MudStack Row="true" Justify="Justify.Center">
+                <MudSwitch @bind-Value="@item.ActivoEdit"
+                           ThumbIcon="@(item.ActivoEdit ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
+                           ThumbIconColor="@(item.ActivoEdit ? Color.Success : Color.Error)"
+                           Disabled="!item.IsEdit">
+                </MudSwitch>
+            </MudStack>
+        </td>
+        <td>
+            <MudStack Row="true" Justify="Justify.Center">
+                <MudSwitch @bind-Value="@item.ActivoExtension"
+                           ThumbIcon="@(item.ActivoExtension ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)"
+                           ThumbIconColor="@(item.ActivoExtension ? Color.Success : Color.Error)"
+                           Disabled="!item.IsExtension">
+                </MudSwitch>
+            </MudStack>
+        </td>
+    </tr>
+}
                 </tbody>
             </MudSimpleTable>
 
@@ -104,7 +97,7 @@
 
         try
         {
-            var result = await _configuracionApi.GetPerfilById(PerfilId);
+            var result = await _configuracionApi.GetPerfilByIdAsync(PerfilId);
             _model = result.Data!;
         }
         catch (YggdrasilApiException ex)
@@ -119,7 +112,7 @@
         if (_model == null) return;
         try
         {
-            var result = await _configuracionApi.SavePerfil(_model);
+            var result = await _configuracionApi.SavePerfilAsync(_model);
             PerfilId = result.Data!;
             await InitialData();
 

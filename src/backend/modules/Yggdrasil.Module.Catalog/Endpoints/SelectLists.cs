@@ -15,7 +15,7 @@ public class SelectLists : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Catalogos - Select Lists");
+            .WithTags("Catalogo - SelectLists");
 
         group.MapGet("monedas", GetMonedaSelectList)
              .WithName("GetMonedaSelectList")
@@ -60,6 +60,14 @@ public class SelectLists : EndpointGroupBase
              .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
              .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
              .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("bancos", GetBancoSelectList)
+          .WithName("GetBancoSelectList")
+          .WithSummary("Obtiene Bancos")
+          .WithDescription("Retorna una lista de los Bancos activos ")
+          .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
+          .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+          .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
     }
 
 
@@ -77,7 +85,7 @@ public class SelectLists : EndpointGroupBase
 
         var result = await queryMediator.QueryAsync(query, cancellationToken);
 
-        return Result.Success(result.Value).ToCustomMinimalApiResult();
+        return result.ToCustomMinimalApiResult();
     }
 
     
@@ -93,7 +101,7 @@ public class SelectLists : EndpointGroupBase
             SearchTerm = searchTerm,
             MaxResults = maxResults
         }, cancellationToken);
-        return Result.Success(result.Value).ToCustomMinimalApiResult();
+        return result.ToCustomMinimalApiResult();
     }
 
     public async Task<IResult> GetTasaIvaSelectList(
@@ -107,7 +115,7 @@ public class SelectLists : EndpointGroupBase
             SearchTerm = searchTerm,
             MaxResults = maxResults
         }, cancellationToken);
-        return Result.Success(result.Value).ToCustomMinimalApiResult();
+        return result.ToCustomMinimalApiResult();
     }
 
     public async Task<IResult> GetTasaFijaSelectList(
@@ -121,7 +129,7 @@ public class SelectLists : EndpointGroupBase
             SearchTerm = searchTerm,
             MaxResults = maxResults
         }, cancellationToken);
-        return Result.Success(result.Value).ToCustomMinimalApiResult();
+        return result.ToCustomMinimalApiResult();
     }
 
     public async Task<IResult> GetTasaVariableSelectList(
@@ -135,6 +143,19 @@ public class SelectLists : EndpointGroupBase
             SearchTerm = searchTerm,
             MaxResults = maxResults
         }, cancellationToken);
-        return Result.Success(result.Value).ToCustomMinimalApiResult();
+        return result.ToCustomMinimalApiResult();
+    }  
+    public static async Task<IResult> GetBancoSelectList(
+        [FromServices] IQueryMediator queryMediator,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] int? maxResults = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await queryMediator.QueryAsync(new GetBancoSelectListQuery
+        {
+            SearchTerm = searchTerm,
+            MaxResults = maxResults
+        }, cancellationToken);
+        return result.ToCustomMinimalApiResult();
     }
 }

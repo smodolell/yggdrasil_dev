@@ -363,3 +363,6 @@ FodyWeavers.xsd
 
 # Refitter.MSBuild generated API client code
 src/frontend/Yggdrasil.ApiClient/Generated/
+
+# VS Code C# Dev Tools - Auto-generated runners
+.vscodecsdt/Runners/

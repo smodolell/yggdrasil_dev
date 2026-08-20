@@ -1,8 +1,4 @@
-﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-
-<MudDataGrid Outlined="true"
+﻿<MudDataGrid Outlined="true"
              Dense="true"
              Bordered="true"
              ServerData="GetTableData"
@@ -80,8 +76,8 @@
             _sortBy = _sortDefinitions.SortBy;
             _sortDescending = _sortDefinitions.Descending;
         }
-        var paginatedList = await _catalogosApi.GetPeriodicidades(
-            _searchText,
+        var paginatedList = await _catalogoApi.PeriodicidadAsync(
+            _searchText ?? "",
             _pageNumber,
             gridState.PageSize,
             _sortBy,
@@ -107,7 +103,6 @@
 
     private async Task EditClick(int id)
     {
-        _snackbarService.Add(id +" ", Severity.Warning);
         var parameters = new DialogParameters { { "PeriodicidadId", id } };
         var dialog = await _dialogService.ShowAsync<PeriodicidadFormDialog>("Editar Periodicidad", parameters, _optionsDialogs);
         var result = await dialog.Result;
@@ -125,9 +120,9 @@
 
             try
             {
-                var result = await _catalogosApi.DeletePeriodicidad(item.Id);
+                await _catalogoApi.DeletePeriodicidadAsync(item.Id);
                 await dataGridRef.ReloadServerData();
-                _snackbarService.Add(result.Message, Severity.Success);
+                _snackbarService.Add("Periodicidad eliminada correctamente", Severity.Success);
             }
             catch (Exception ex)
             {

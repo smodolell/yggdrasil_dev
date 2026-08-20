@@ -1,0 +1,121 @@
+@attribute [Route(PageRoute.CancelarPagoPage)]
+@attribute [AccessPoint(AppMenu.MenuCobranza, "Cancelar Pago")]
+@using Yggdrasil.Module.Cobranza.UI.Services.Cobranza
+@using Yggdrasil.Module.Cobranza.UI.Services.Cobranza.DTOs
+@inject ICobranzaApi _cobranzaApi
+
+<PageHeader Title="Cancelar Pago" Icon="@AppMenu.MenuCobranzaIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+
+<MudPaper Outlined="true" Class="pa-4 mb-4">
+    <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-3">Cancelar Pago</MudText>
+    <EditForm Model="_model" OnValidSubmit="CancelarPago">
+        <FluentValidator />
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_model.MotivoCancelacion"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Label="Motivo de Cancelación"
+                              For="@(() => _model.MotivoCancelacion)" />
+            </MudItem>
+
+            @foreach (var item in _model.Pagos)
+            {
+                <MudItem xs="12" sm="5">
+                    <MudNumericField T="int"
+                                     @bind-Value="item.PagoId"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Label="Pago ID"
+                                     Min="1" />
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudNumericField T="int"
+                                     @bind-Value="item.MovimientoId"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Label="Movimiento ID"
+                                     Min="1" />
+                </MudItem>
+                <MudItem xs="12" sm="2" Class="d-flex align-center">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Delete"
+                                   Color="Color.Error"
+                                   Size="Size.Small"
+                                   OnClick="() => RemoverItem(item)" />
+                </MudItem>
+            }
+
+            <MudItem xs="12">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Default"
+                           StartIcon="@Icons.Material.Outlined.Add"
+                           OnClick="AgregarItem">
+                    Agregar Pago
+                </MudButton>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudStack Row="true" Justify="Justify.FlexEnd">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Error"
+                               ButtonType="ButtonType.Submit"
+                               StartIcon="@Icons.Material.Outlined.Cancel"
+                               Disabled="_loading || _model.Pagos.Count == 0">
+                        Cancelar Pago
+                    </MudButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+
+    @if (_resultado != null)
+    {
+        <MudDivider Class="my-4" />
+        <MudAlert Severity="Severity.Success" Elevation="0">
+            @_resultado
+        </MudAlert>
+    }
+</MudPaper>
+
+@code {
+    private bool _loading;
+    private CancelarPagoDto _model = new();
+    private string? _resultado;
+
+    private List<BreadcrumbItem> _items =
+    [
+        new BreadcrumbItem("Cobranza", href: null, icon: AppMenu.MenuCobranzaIcon, disabled: true),
+        new BreadcrumbItem("Cancelar Pago", href: null, disabled: true)
+    ];
+
+    private async Task CancelarPago()
+    {
+        _loading = true;
+        _resultado = null;
+        try
+        {
+            var result = await _cobranzaApi.CancelarPago(_model);
+            _resultado = result.Content?.Message ?? "Pago cancelado correctamente.";
+            _snackbarService.Add("Pago cancelado correctamente", Severity.Success);
+            _model = new CancelarPagoDto();
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cancelar pago");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void AgregarItem() => _model.Pagos.Add(new CancelarPagoItemDto());
+    private void RemoverItem(CancelarPagoItemDto item) => _model.Pagos.Remove(item);
+}

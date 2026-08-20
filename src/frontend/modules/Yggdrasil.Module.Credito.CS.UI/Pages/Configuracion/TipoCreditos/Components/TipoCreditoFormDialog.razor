@@ -1,0 +1,107 @@
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="Guardar" id="TipoCreditoForm">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.ClaveTipoCredito"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Clave"
+                                  For="@(() => _model.ClaveTipoCredito)" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="_model.NomTipoCredito"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Nombre"
+                                  For="@(() => _model.NomTipoCredito)" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="int"
+                               @bind-Value="_model.TipoMovimientoRentaId"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Label="Tipo de Movimiento de Renta"
+                               For="@(() => _model.TipoMovimientoRentaId)">
+                        @foreach (var tipoMovimiento in _tiposMovimiento)
+                        {
+                            <MudSelectItem T="int" Value="@tipoMovimiento.Id">@tipoMovimiento.NomTipoMovimiento</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch @bind-Value="_model.Activo" Label="¿Activo?" Color="Color.Primary" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="TipoCreditoForm">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="Cerrar"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+    [Parameter] public int? TipoCreditoId { get; set; }
+
+    private TipoCreditoCsEditDto _model = new();
+    private List<TipoMovimientoCsListItemDto> _tiposMovimiento = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var tiposMovimiento = await _configuracionApi.GetCSTipoMovimientosAsync(string.Empty, 1, 1000, string.Empty, null);
+            _tiposMovimiento = tiposMovimiento.Data?.Results?.ToList() ?? [];
+
+            if (TipoCreditoId.HasValue)
+            {
+                var result = await _configuracionApi.GetCSTipoCreditoByIdAsync(TipoCreditoId.Value);
+                _model = result.Data ?? new();
+            }
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar el tipo de crédito");
+        }
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            if (TipoCreditoId.HasValue)
+            {
+                await _configuracionApi.UpdateCSTipoCreditoAsync(TipoCreditoId.Value, _model);
+                _snackbarService.Add("Tipo de crédito actualizado correctamente", Severity.Success);
+            }
+            else
+            {
+                await _configuracionApi.CreateCSTipoCreditoAsync(_model);
+                _snackbarService.Add("Tipo de crédito creado correctamente", Severity.Success);
+            }
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al guardar el tipo de crédito");
+        }
+    }
+
+    private void Cerrar() => MudDialog?.Close(DialogResult.Ok(false));
+}

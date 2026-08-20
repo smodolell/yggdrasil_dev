@@ -1,0 +1,22 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@using MudBlazor.Extensions
+@using Blazilla
+@using Yggdrasil.Blazor.Attributes
+@using Yggdrasil.Blazor.Constants
+@using Yggdrasil.Blazor.Components.Dialogs
+@using Yggdrasil.Blazor.Components.Shared
+@using Yggdrasil.Blazor.DTOs
+@using Yggdrasil.Blazor.Exceptions
+@using Yggdrasil.Blazor.Extensions
+@using Yggdrasil.Module.Report.UI.Constants
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbarService;
+@inject NavigationManager _navManager;
+@inject AuthenticationStateProvider _stateProvider;
+
+@attribute [Authorize]

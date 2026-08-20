@@ -1,0 +1,72 @@
+@using Yggdrasil.ApiClient
+@using Yggdrasil.ApiClient.Contracts
+
+@inject IReportesApi _reportesApi;
+<MudDialog>
+    <DialogContent>
+        <MudDataGrid Items="@_parametros" Outlined="true" Dense="true" Bordered="true" SortMode="SortMode.Single">
+            <Columns>
+                <PropertyColumn Title="Nombre" Property="x => x.NomParametro" />
+                <PropertyColumn Title="Tipo Dato" Property="x => x.TipoDato" />
+                <PropertyColumn Title="Etiqueta (Display)" Property="x => x.Display" />
+                <PropertyColumn Title="Orden" Property="x => x.Order" />
+                <TemplateColumn HeaderStyle="white-space:nowrap;width:100px;" Title="Acciones">
+                    <CellTemplate>
+                        <MudIconButton Size="@MudBlazor.Size.Small"
+                                       Icon="@Icons.Material.Outlined.Edit"
+                                       Color="Color.Primary"
+                                       OnClick="()=>EditClick(context.Item.Id)" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <NoRecordsContent>
+                <MudText>No hay parámetros configurados para este reporte.</MudText>
+            </NoRecordsContent>
+        </MudDataGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public int ReporteId { get; set; }
+
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    private List<ParametroListItemDto> _parametros = new();
+    private DialogOptions _optionsDialogs = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var result = await _reportesApi.GetParametrosAsync(ReporteId,string.Empty);
+        if (result.Success)
+        {
+            _parametros = result.Data.ToList();
+        }
+    }
+
+    private async Task EditClick(Guid parametroId)
+    {
+        var parameters = new DialogParameters { { "ParametroId", parametroId } };
+        var dialog = await _dialogService.ShowAsync<ParametroFormDialog>("Editar Parámetro", parameters, _optionsDialogs);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}

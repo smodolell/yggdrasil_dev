@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Yggdrasil.Blazor.Extensions;
 using Yggdrasil.Module.Cobranza.UI.Services.Catalogos;
+using Yggdrasil.Module.Cobranza.UI.Services.Cobranza;
+using Yggdrasil.Module.Cobranza.UI.Services.Creditos;
 
 namespace Yggdrasil.Module.Cobranza.UI;
 
@@ -13,6 +15,8 @@ public static class CobranzaUIExtensions
 
         // Usamos el extension del Kernel para registrar el Módulo y Refit
         services.AddYggdrasilModule<CobranzaUIModule, ICatalogosApi>(apiUri);
+        services.AddYggdrasilModule<CobranzaUIModule, ICobranzaApi>(apiUri);
+        services.AddYggdrasilModule<CobranzaUIModule, ICreditosApi>(apiUri);
 
         return services;
     }

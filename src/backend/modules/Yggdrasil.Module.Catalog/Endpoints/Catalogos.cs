@@ -17,7 +17,7 @@ public class Catalogos : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Catalogo - Catalogos");
+            .WithTags("Catalogo");
 
         #region Banco
         group.MapGet("banco/{id}", GetBancoById)
@@ -349,6 +349,56 @@ public class Catalogos : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+        #endregion
+
+        #region CalendarioLaboral
+
+        group.MapGet("calendario-laboral/", GetPaginatedCalendarioLaboral)
+            .WithName("GetPaginatedCalendarioLaboral")
+            .WithSummary("Obtiene el calendario laboral paginado y filtrado")
+            .WithDescription("Obtiene una lista paginada del calendario laboral con filtros por año y mes")
+            .Produces<ApiResponseDto<PagedResultDto<CalendarioLaboralListItemDto>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+
+        group.MapPut("calendario-laboral/{id}", UpdateCalendarioLaboral)
+            .WithName("UpdateCalendarioLaboral")
+            .WithSummary("Actualiza un día del calendario laboral")
+            .WithDescription("Actualiza si un día es hábil o no y su descripción")
+            .Accepts<CalendarioLaboralEditDto>("application/json")
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+
+        group.MapPost("calendario-laboral/generar", CreateCalendarioLaboral)
+            .WithName("CreateCalendarioLaboral")
+            .WithSummary("Genera el calendario laboral de un año")
+            .WithDescription("Ejecuta el proceso que genera los días del calendario laboral para el año indicado")
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("calendario-laboral/layout", GetLayoutCalendario)
+            .WithName("GetLayoutCalendario")
+            .WithSummary("Descarga el layout de días inhábiles")
+            .WithDescription("Genera y descarga un archivo Excel de ejemplo para importar días inhábiles")
+            .Produces<FileDownloadDto>(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+
+        group.MapPost("calendario-laboral/importar-dias-inhabiles", ImportarDiasInhabiles)
+            .WithName("ImportarDiasInhabiles")
+            .WithSummary("Importa días inhábiles desde un archivo Excel")
+            .WithDescription("Sube un archivo Excel con los días inhábiles a marcar en el calendario laboral")
+            .Accepts<IFormFile>("multipart/form-data")
+            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError)
+            .DisableAntiforgery();
+
         #endregion
     }
 
@@ -774,4 +824,72 @@ public class Catalogos : EndpointGroupBase
     }
     #endregion
 
+    #region CalendarioLaboral
+    private static async Task<IResult> GetPaginatedCalendarioLaboral(
+        [FromServices] IQueryMediator queryMediator,
+        [FromQuery] int? anio = null,
+        [FromQuery] int? mes = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int size = 10,
+        [FromQuery] string sortColumn = nameof(CalendarioLaboralListItemDto.Fecha),
+        [FromQuery] bool sortDescending = false)
+    {
+        var query = new GetCalendarioLaboralQuery
+        {
+            Anio = anio,
+            Mes = mes,
+            Page = page,
+            PageSize = size,
+            SortColumn = sortColumn,
+            SortDescending = sortDescending
+        };
+
+        var result = await queryMediator.QueryAsync(query);
+        return result.ToCustomMinimalApiResult();
+    }
+
+    private static async Task<IResult> UpdateCalendarioLaboral(
+        [FromServices] ICommandMediator commandMediator,
+        int id,
+        [FromBody] CalendarioLaboralEditDto model)
+    {
+        var command = new UpdateCalendarioLaboralCommand
+        {
+            Id = id,
+            Model = model
+        };
+
+        var result = await commandMediator.SendAsync(command);
+        return result.ToCustomMinimalApiResult();
+    }
+
+    private static async Task<IResult> CreateCalendarioLaboral(
+        [FromServices] ICommandMediator commandMediator,
+        [FromQuery] int? anio = null)
+    {
+        var result = await commandMediator.SendAsync(new CreateCalendarioLaboralCommand { Anio = anio });
+        return result.ToCustomMinimalApiResult();
+    }
+
+    private static async Task<IResult> GetLayoutCalendario(
+        [FromServices] IQueryMediator queryMediator)
+    {
+        var result = await queryMediator.QueryAsync(new GetLayoutCalendarioQuery());
+        if (!result.IsSuccess)
+            return result.ToCustomMinimalApiResult();
+
+        // Retornar el DTO en lugar del archivo directamente
+        return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> ImportarDiasInhabiles(
+        [FromServices] ICommandMediator commandMediator,
+        IFormFile archivo)
+    {
+        using var stream = archivo.OpenReadStream();
+        var result = await commandMediator.SendAsync(new ImportarDiasInhabilesCommand { ArchivoStream = stream });
+        return result.ToCustomMinimalApiResult();
+    }
+
+    #endregion
 }

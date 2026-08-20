@@ -1,5 +1,5 @@
 ================================================================================
- YGGDRASIL PROFUTURO - ARQUITECTURA DE LA APLICACION
+ YGGDRASIL TEST - ARQUITECTURA DE LA APLICACION
 ================================================================================
 
 Sistema financiero (creditos, cobranza, originacion) construido como un

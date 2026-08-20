@@ -1,8 +1,4 @@
-﻿@using Yggdrasil.Module.Credito.UI.Services.Configuacion
-@using Yggdrasil.Module.Credito.UI.Services.Configuacion.DTOs
-@inject IConfiguracionApi _configuracionApi;
-
-<MudDataGrid Outlined="true"
+﻿<MudDataGrid Outlined="true"
              Dense="true"
              Bordered="true"
              ServerData="GetTableData"
@@ -57,10 +53,10 @@
     private async Task<GridData<PerfilListItemDto>> GetTableData(GridState<PerfilListItemDto> gridState, CancellationToken cancellationToken)
     {
         var _pageNumber = (gridState.Page + 1);
-        var paginatedList = await _configuracionApi.GetPerfiles(
-            _searchText,
+        var paginatedList = await _configuracionApi.GetPerfilesAsync(
+            _searchText ?? string.Empty,
             _pageNumber,
-            gridState.PageSize
+            gridState.PageSize, string.Empty, null, true
         );
         return new GridData<PerfilListItemDto>()
         {
@@ -85,10 +81,10 @@
         {
             try
             {
-                var result = await _configuracionApi.DeletePerfil(item.Id);
-                await dataGridRef.ReloadServerData();
-                _snackbarService.Add(result.Message, Severity.Success);
-                
+                 var result = await _configuracionApi.DeletePerfilAsync(item.Id);
+                 await dataGridRef.ReloadServerData();
+                 _snackbarService.Add(result.Message, Severity.Success);
+
             }
             catch (YggdrasilApiException ex)
             {

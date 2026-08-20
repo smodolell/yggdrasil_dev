@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.*" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.*" PrivateAssets="all" />
-    <PackageReference Include="MudBlazor" Version="9.7.0" />
+    <PackageReference Include="MudBlazor" Version="9.8.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,8 +19,11 @@
     <ProjectReference Include="..\modules\Yggdrasil.Module.Catalog.UI\Yggdrasil.Module.Catalog.UI.csproj" />
     <ProjectReference Include="..\modules\Yggdrasil.Module.Cobranza.UI\Yggdrasil.Module.Cobranza.UI.csproj" />
     <ProjectReference Include="..\modules\Yggdrasil.Module.Credito.UI\Yggdrasil.Module.Credito.UI.csproj" />
+    <ProjectReference Include="..\modules\Yggdrasil.Module.Credito.CS.UI\Yggdrasil.Module.Credito.CS.UI.csproj" />
     <ProjectReference Include="..\modules\Yggdrasil.Module.Layout.UI\Yggdrasil.Module.Layout.UI.csproj" />
+    <ProjectReference Include="..\modules\Yggdrasil.Module.Report.UI\Yggdrasil.Module.Report.UI.csproj" />
     <ProjectReference Include="..\modules\Yggdrasil.Module.System.UI\Yggdrasil.Module.System.UI.csproj" />
+    <ProjectReference Include="..\Yggdrasil.ApiClient\Yggdrasil.ApiClient.csproj" />
     <ProjectReference Include="..\Yggdrasil.Blazor\Yggdrasil.Blazor.csproj" />
   </ItemGroup>
 

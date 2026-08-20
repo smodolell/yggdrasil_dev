@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Yggdrasil.Module.Credito.Features.Operaciones.CapturaCredito.DTOs;
 
@@ -31,22 +32,11 @@ public class CreditoEditDto
     public DateTime? FechaInicio { get; set; }
 
 
-    public decimal CalcularTasaBase()
-    {
-
-        return (Tasa + PuntosMas) * PuntosPor;
-    }
-
-    public decimal CalcularTasaBaseMora()
-    {
-
-        return (TasaMora + PuntosMasMora) * PuntosPorMora;
-    }
 
 
 
 
-    
+
 
 
 

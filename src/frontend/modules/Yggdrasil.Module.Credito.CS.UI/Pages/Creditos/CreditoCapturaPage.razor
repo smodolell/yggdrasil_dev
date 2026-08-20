@@ -1,0 +1,35 @@
+@attribute [Route(PageRoute.CreditoNew)]
+@attribute [Route(PageRoute.CreditoEdit + "/{CreditoId:int}")]
+@attribute [AccessPoint(AppMenu.MenuOperacion, "Captura de Crédito Simple", Yggdrasil.Blazor.DTOs.AccessPointType.Page)]
+@using Yggdrasil.Module.Credito.CS.UI.Pages.Creditos.Components
+
+<PageHeader Title="@(CreditoId.HasValue ? "Editar Crédito Simple" : "Nuevo Crédito Simple")" Icon="@AppMenu.MenuOperacionIcon">
+    <MudBreadcrumbs Items="_items" />
+</PageHeader>
+
+<CreditoForm @ref="_creditoForm" CreditoId="CreditoId" OnSaved="HandleSaved" OnCancel="Cancelar" />
+
+@code {
+    [Parameter] public int? CreditoId { get; set; }
+
+    private CreditoForm _creditoForm = null!;
+
+    private List<BreadcrumbItem> _items =>
+    [
+        new BreadcrumbItem("Créditos Simples", href: ("." + PageRoute.CreditosPage), icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem(CreditoId.HasValue ? "Editar" : "Nuevo", href: null, icon: AppMenu.MenuOperacionIcon, disabled: true)
+    ];
+
+    private async Task HandleSaved(int id)
+    {
+        if (!CreditoId.HasValue || CreditoId.Value != id)
+        {
+            CreditoId = id;
+            _navManager.NavigateTo("." + PageRoute.CreditoEdit + $"/{id}", replace: true);
+        }
+
+        await _creditoForm.ReloadAsync(id);
+    }
+
+    private void Cancelar() => _navManager.NavigateTo("." + PageRoute.CreditosPage);
+}

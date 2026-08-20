@@ -1,0 +1,88 @@
+@using Yggdrasil.Module.Cobranza.UI.Services.Creditos
+@using Yggdrasil.Module.Cobranza.UI.Services.Creditos.DTOs
+@inject ICreditosApi _creditosApi
+
+<MudAutocomplete T="CreditoBusquedaDto"
+                 Variant="Variant.Outlined"
+                 Label="@Label"
+                 Margin="Margin.Dense"
+                 Value="_creditoSelect"
+                 ResetValueOnEmptyText="true"
+                 CoerceText="false"
+                 Clearable="true"
+                 AdornmentIcon="@Icons.Material.Outlined.Search"
+                 Placeholder="Buscar por clave o nombre..."
+                 SelectValueOnTab="true"
+                 ValueChanged="CreditoValueChanged"
+                 SearchFunc="BuscarCredito"
+                 ToStringFunc="@(e => e == null ? null : $"{e.ClaveCredito} — {e.NomCliente}")">
+    <ItemTemplate Context="item">
+        <MudStack Spacing="0" Class="py-1">
+            <MudText Typo="Typo.body2" Class="font-weight-bold">
+                @item.ClaveCredito — @item.NomCliente
+            </MudText>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                Capital: @String.Format("{0:C}", item.Capital)
+                &nbsp;·&nbsp; @item.NomEstatusCredito
+                @if (item.FechaActivacion.HasValue)
+                {
+                    <span> &nbsp;·&nbsp; Act: @item.FechaActivacion.Value.ToString("dd/MM/yyyy")</span>
+                }
+            </MudText>
+        </MudStack>
+    </ItemTemplate>
+</MudAutocomplete>
+
+@if (_creditoSelect != null)
+{
+    <MudStack Row="true" Spacing="1" Class="mt-1 px-1" AlignItems="AlignItems.Center">
+        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Class="mud-text-secondary" Style="font-size:14px;" />
+        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+            Capital: <strong>@_creditoSelect.Capital.ToString("N2")</strong>
+            &nbsp;·&nbsp; @_creditoSelect.NomEstatusCredito
+            @if (_creditoSelect.FechaActivacion.HasValue)
+            {
+                <span> &nbsp;·&nbsp; Activado: @_creditoSelect.FechaActivacion.Value.ToString("dd/MM/yyyy")</span>
+            }
+        </MudText>
+    </MudStack>
+}
+
+@code {
+    [Parameter] public string Label { get; set; } = "Buscar Crédito";
+    [Parameter] public int? EstatusCreditoId { get; set; }
+    [Parameter] public EventCallback<CreditoBusquedaDto?> OnCreditoSelected { get; set; }
+
+    private CreditoBusquedaDto? _creditoSelect;
+
+    public void ClearSelection()
+    {
+        _creditoSelect = null;
+        StateHasChanged();
+    }
+
+    private async Task CreditoValueChanged(CreditoBusquedaDto? selected)
+    {
+        _creditoSelect = selected;
+        if (OnCreditoSelected.HasDelegate)
+            await OnCreditoSelected.InvokeAsync(selected);
+    }
+
+    private async Task<IEnumerable<CreditoBusquedaDto>> BuscarCredito(string value, CancellationToken token)
+    {
+        try
+        {
+            var result = await _creditosApi.GetCreditos(q: value, pageSize: 15, estatusCreditoId: EstatusCreditoId, cancellationToken: token);
+            return result.Data?.Results ?? [];
+        }
+        catch (OperationCanceledException)
+        {
+            return [];
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+            return [];
+        }
+    }
+}

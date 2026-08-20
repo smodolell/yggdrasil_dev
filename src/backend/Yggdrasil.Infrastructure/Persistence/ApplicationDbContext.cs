@@ -67,7 +67,45 @@ public partial class ApplicationDbContext : IdentityDbContext<SYS_Usuario, SYS_R
 
     #endregion
 
+    #region RSP_
 
+    public DbSet<RSP_Archivo> RSP_Archivo => Set<RSP_Archivo>();
+
+    public DbSet<RSP_Input> RSP_Input => Set<RSP_Input>();
+
+    public DbSet<RSP_Parametro> RSP_Parametro => Set<RSP_Parametro>();
+
+    public DbSet<RSP_Reporte> RSP_Reporte => Set<RSP_Reporte>();
+
+    public DbSet<OT_Plan> OT_Plan => Set<OT_Plan>();
+
+
+    public DbSet<OT_PlanPeriodicidad> OT_PlanPeriodicidad => Set<OT_PlanPeriodicidad>();
+
+    public DbSet<DEV_CreditoIntraDia> DEV_CreditoIntraDia => Set<DEV_CreditoIntraDia>();
+
+    public DbSet<DEV_InteresAcumulado> DEV_InteresAcumulado => Set<DEV_InteresAcumulado>();
+
+    public DbSet<DEV_MovimientoIntraDia> DEV_MovimientoIntraDia => Set<DEV_MovimientoIntraDia>();
+    public DbSet<DEV_TablaAmortiza> DEV_TablaAmortiza => Set<DEV_TablaAmortiza>();
+
+
+    #endregion
+
+    #region CS_
+
+    public DbSet<CS_Credito> CS_Credito => Set<CS_Credito>();
+    public DbSet<CS_EstatusCredito> CS_EstatusCredito => Set<CS_EstatusCredito>();
+    public DbSet<CS_MetodoArmotizacion> CS_MetodoArmotizacion => Set<CS_MetodoArmotizacion>();
+    public DbSet<CS_Movimiento> CS_Movimiento => Set<CS_Movimiento>();
+    public DbSet<CS_Pago> CS_Pago => Set<CS_Pago>();
+    public DbSet<CS_PagoMovimiento> CS_PagoMovimiento => Set<CS_PagoMovimiento>();
+    public DbSet<CS_TablaAmortiza> CS_TablaAmortiza => Set<CS_TablaAmortiza>();
+    public DbSet<CS_TipoCredito> CS_TipoCredito => Set<CS_TipoCredito>();
+    public DbSet<CS_TipoMovimiento> CS_TipoMovimiento => Set<CS_TipoMovimiento>();
+    public DbSet<CS_TipoPago> CS_TipoPago => Set<CS_TipoPago>();
+
+    #endregion
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }

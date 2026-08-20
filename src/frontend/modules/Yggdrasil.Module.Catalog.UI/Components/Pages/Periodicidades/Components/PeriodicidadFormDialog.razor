@@ -1,8 +1,4 @@
-﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-
-<MudDialog>
+﻿<MudDialog>
     <DialogContent>
         <EditForm Model="_model" OnValidSubmit="SaveSubmit" style="width:100%;">
             <FluentValidator />
@@ -24,16 +20,16 @@
                     </MudTextField>
                 </MudItem>
                 <MudItem xs="12" sm="12" md="3">
-                    <MudNumericField T="short" @bind-Value="_model.ParamDias" Label="Días" Margin="Margin.Dense" Variant="Variant.Outlined" Min="1" Max="31" />
+                    <MudNumericField T="int" @bind-Value="_model.ParamDias" Label="Días" Margin="Margin.Dense" Variant="Variant.Outlined" Min="1" Max="31" />
                 </MudItem>
                 <MudItem xs="12" sm="12" md="3">
-                    <MudNumericField T="short" @bind-Value="_model.ParamMes" Label="Mes" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="36" />
+                    <MudNumericField T="int" @bind-Value="_model.ParamMes" Label="Mes" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="36" />
                 </MudItem>
                 <MudItem xs="12" sm="12" md="3">
-                    <MudNumericField T="short" @bind-Value="_model.NroPagosMes" Label="Pagos por mes" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="31" />
+                    <MudNumericField T="int" @bind-Value="_model.NroPagosMes" Label="Pagos por mes" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="31" />
                 </MudItem>
                 <MudItem xs="12" sm="12" md="3">
-                    <MudNumericField T="short" @bind-Value="_model.NroPagosAnio" Label="Pagos por Año" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="365" />
+                    <MudNumericField T="int" @bind-Value="_model.NroPagosAnio" Label="Pagos por Año" Margin="Margin.Dense" Variant="Variant.Outlined" Min="0" Max="365" />
                 </MudItem>
                 <MudItem xs="12" sm="12" md="3">
                     <MudSwitch @bind-Value="@_model.UsaDias" Label="Usa Dias" Color="Color.Primary" />
@@ -71,9 +67,8 @@
         {
             try
             {
-                var result = await _catalogosApi.GetPeriodicidadById(PeriodicidadId);
+                var result = await _catalogoApi.GetPeriodicidadByIdAsync(PeriodicidadId);
                 _model = result.Data!;
-                _snackbarService.Add(result.Errors.FirstOrDefault() ?? "", Severity.Error);
             }
             catch (YggdrasilApiException ex)
             {
@@ -83,9 +78,6 @@
             {
                 _snackbarService.Add(ex.Message, Severity.Error);
             }
-
-
-
         }
     }
 
@@ -96,13 +88,13 @@
         {
             if (PeriodicidadId == 0)
             {
-                var result = await _catalogosApi.CreatePeriodicidad(_model);
+                var result = await _catalogoApi.CreatePeriodicidadAsync(_model);
                 _snackbarService.Add(result.Message, Severity.Success);
             }
             else
             {
-                var result = await _catalogosApi.UpdatePeriodicidad(PeriodicidadId, _model);
-                _snackbarService.Add(result.Message, Severity.Success);
+                await _catalogoApi.UpdatePeriodicidadAsync(PeriodicidadId, _model);
+                _snackbarService.Add("Periodicidad actualizada correctamente", Severity.Success);
             }
             MudDialog?.Close(DialogResult.Ok(true));
 

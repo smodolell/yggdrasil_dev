@@ -1,7 +1,3 @@
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-
 <MudDataGrid Outlined="true"
              Dense="true"
              Bordered="true"
@@ -83,9 +79,9 @@
             _sortBy = _sortDefinitions.SortBy;
             _sortDescending = _sortDefinitions.Descending;
         }
-        var paginatedList = await _catalogosApi.GetMonedas(_searchText,
+        var paginatedList = await _catalogoApi.MonedaAsync(_searchText ?? "",
             _pageNumber,
-            gridState.PageSize, _sortBy, _sortDescending, cancellationToken);
+            gridState.PageSize, _sortBy, _sortDescending);
         return new GridData<MonedaListItemDto>()
         {
             TotalItems = paginatedList.Data!.TotalCount,
@@ -121,16 +117,9 @@
         {
             try
             {
-                var result = await _catalogosApi.DeleteMoneda(item.Id);
-                if (result.Success)
-                {
-                    await dataGridRef.ReloadServerData();
-                    _snackbarService.Add(result.Message, Severity.Success);
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
-                }
+                await _catalogoApi.DeleteMonedaAsync(item.Id);
+                await dataGridRef.ReloadServerData();
+                _snackbarService.Add("Moneda eliminada correctamente", Severity.Success);
             }
             catch (Exception ex)
             {

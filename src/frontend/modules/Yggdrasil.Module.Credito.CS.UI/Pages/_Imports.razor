@@ -1,0 +1,31 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Ardalis.Result
+@using MudBlazor
+@using MudBlazor.Extensions
+@using Blazilla
+@using Yggdrasil.Blazor.Attributes
+@using Yggdrasil.Blazor.Constants
+@using Yggdrasil.Blazor.Components.Dialogs
+@using Yggdrasil.Blazor.Components.Shared
+@using Yggdrasil.Blazor.DTOs
+@using Yggdrasil.Blazor.Helpers
+@using Yggdrasil.Blazor.Exceptions
+@using Yggdrasil.Blazor.Extensions
+@using Yggdrasil.ApiClient
+@using Yggdrasil.ApiClient.Contracts
+@using Yggdrasil.Module.Credito.CS.UI.Constants
+
+@inject ICreditoCSConfiguracionApi _configuracionApi;
+@inject ICreditoCSCreditosApi _creditosApi;
+@inject ICreditoCSOperacionApi _operacionApi;
+@inject ICreditoCSSelectListsApi _selectListCSApi;
+@inject ICatalogoSelectListsApi _selectListCatalogoApi;
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbarService;
+@inject NavigationManager _navManager;
+@inject AuthenticationStateProvider _stateProvider;
+@attribute [Authorize]

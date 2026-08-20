@@ -1,0 +1,79 @@
+@attribute [Route(PageRoute.EjecutarReportePage)]
+@attribute [AccessPoint(AppMenu.MenuReporte, "Ejecutar")]
+@using Yggdrasil.ApiClient
+@using Yggdrasil.ApiClient.Contracts
+@using Yggdrasil.Module.Report.UI.Pages.Ejecucion.Components
+@inject IReportesApi _reportesApi;
+
+<PageHeader Title="Ejecutar Reportes" Icon="@Icons.Material.Filled.PlayArrow"></PageHeader>
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudGrid>
+        <MudItem xs="12" sm="8" md="6">
+            <MudAutocomplete T="SelectReporteDto"
+                             Label="Buscar Reporte"
+                             SearchFunc="@SearchReportes"
+                             Value="@_reporteActual"
+                             ValueChanged="OnReporteSelected"
+                             ToStringFunc="@(e=> e==null ? null : $"{e.NomReporte}")" 
+                             Clearable="true"
+                             ResetValueOnEmptyText="true"
+                             Placeholder="Tipea el nombre del reporte..."
+                             AdornmentIcon="@Icons.Material.Filled.Search"
+                             AdornmentColor="Color.Primary" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (_configuracion != null)
+{
+    <EjecutarReporteForm Configuracion="@_configuracion" OnCancel="ResetSelection" />
+}
+else if (_isLoading)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mt-4" />
+}
+
+@code {
+    private SelectReporteDto? _reporteActual;
+    private ReporteExecuteDto? _configuracion;
+    private bool _isLoading = false;
+
+    private async Task<IEnumerable<SelectReporteDto>> SearchReportes(string value, CancellationToken cancellationToken)
+    {
+        var result = await _reportesApi.SearchReportesAsync(value);
+        if (result.Success && result.Data != null)
+        {
+            return result.Data;
+        }
+        return new List<SelectReporteDto>();
+    }
+
+    private async Task OnReporteSelected(SelectReporteDto? reporte)
+    {
+        _reporteActual = reporte;
+        _configuracion = null;
+        if (reporte != null)
+        {
+            _isLoading = true;
+            StateHasChanged();
+            
+            var result = await _reportesApi.GetReporteConfiguracionAsync(reporte.ReporteId);
+            if (result.Success)
+            {
+                _configuracion = result.Data;
+            }
+            else
+            {
+                _snackbarService.Add("No se pudo cargar la configuración del reporte.", Severity.Error);
+            }
+            _isLoading = false;
+        }
+    }
+
+    private void ResetSelection()
+    {
+        _reporteActual = null;
+        _configuracion = null;
+    }
+}

@@ -1,0 +1,17 @@
+@attribute [Route(PageRoute.TipoMovimientosPage)]
+@attribute [AccessPoint(AppMenu.MenuConfiguracion, "Tipos de Movimiento")]
+@using Yggdrasil.Module.Credito.CS.UI.Pages.Configuracion.TipoMovimientos.Components
+
+<PageHeader Title="Tipos de Movimiento" Description="Catálogo de tipos de movimiento de crédito simple" Icon="@AppMenu.MenuConfiguracionIcon">
+    <MudBreadcrumbs Items="_items" />
+</PageHeader>
+
+<TipoMovimientoList />
+
+@code {
+    private List<BreadcrumbItem> _items =
+    [
+        new BreadcrumbItem("Configuración", href: null, disabled: true),
+        new BreadcrumbItem("Tipos de Movimiento", href: null, icon: AppMenu.MenuConfiguracionIcon, disabled: true)
+    ];
+}

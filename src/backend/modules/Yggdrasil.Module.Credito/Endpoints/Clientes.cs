@@ -18,11 +18,11 @@ public class Clientes : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Crédito - Clientes");
+            .WithTags("Credito - Clientes");
 
         #region Persona
         group.MapGet("persona/", GetClientes)
-            .WithName("CF_GetClientes")
+            .WithName("GetClientes")
             .WithSummary("Obtiene clientes filtrados y paginados")
             .Produces<ApiResponseDto<PagedResultDto<PersonaListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
@@ -38,7 +38,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
         
         group.MapPost("persona/", CreatePersonaDefault)
-            .WithName("CF_CreatePersonaDefault")
+            .WithName("CreatePersonaDefault")
             .WithSummary("Crea una nueva persona con valores por defecto")
             .Produces<ApiResponseDto<int>>(StatusCodes.Status201Created)
             .Produces<ApiResponseDto<int>>(StatusCodes.Status400BadRequest)
@@ -46,7 +46,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto<int>>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("persona/{id}/fisica", GetPersonaFisicaById)
-            .WithName("CF_GetPersonaFisicaById")
+            .WithName("GetPersonaFisicaById")
             .WithSummary("Obtiene los datos de persona física por ID")
             .Produces<ApiResponseDto<PersonaFisicaEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -54,17 +54,17 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPut("persona/{id}/fisica", SavePersonaFisica)
-            .WithName("CF_SavePersonaFisica")
+            .WithName("SavePersonaFisica")
             .WithSummary("Guarda los datos de persona física")
             .Accepts<PersonaFisicaEditDto>("application/json")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("persona/{id}/seccion-edit", GetSeccionClienteEdit)
-            .WithName("CF_GetSeccionClienteEdit")
+            .WithName("GetSeccionClienteEdit")
             .WithSummary("Obtiene la sección de edición del cliente por ID")
             .Produces<ApiResponseDto<ClienteEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -72,19 +72,19 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPut("persona/{id}/seccion-edit", SaveSeccionClienteEdit)
-            .WithName("CF_SaveSeccionClienteEdit")
+            .WithName("SaveSeccionClienteEdit")
             .WithSummary("Guarda la sección de edición del cliente")
             .Accepts<ClienteEditDto>("application/json")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
-        group.MapDelete("persona/{id}", DeletePersona)
-            .WithName("CF_DeletePersona")
+        group.MapDelete("persona/{id}", DeletePersona)  
+            .WithName("DeletePersona")
             .WithSummary("Elimina una persona por ID")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
@@ -92,7 +92,7 @@ public class Clientes : EndpointGroupBase
 
         #region Domicilio
         group.MapPost("domicilio/{personaId}", CreateDomicilio)
-            .WithName("CF_CreateDomicilio")
+            .WithName("CreateDomicilio")
             .WithSummary("Crea un nuevo domicilio para una persona")
             .Accepts<DomicilioEditDto>("application/json")
             .Produces<ApiResponseDto>(StatusCodes.Status200OK)
@@ -101,7 +101,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPut("domicilio/{id}", UpdateDomicilio)
-            .WithName("CF_UpdateDomicilio")
+            .WithName("UpdateDomicilio")
             .WithSummary("Actualiza un domicilio")
             .Accepts<DomicilioEditDto>("application/json")
             .Produces(StatusCodes.Status200OK)
@@ -111,7 +111,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapDelete("domicilio/{id}", DeleteDomicilio)
-            .WithName("CF_DeleteDomicilio")
+            .WithName("DeleteDomicilio")
             .WithSummary("Elimina un domicilio por ID")
             .Produces(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -121,14 +121,14 @@ public class Clientes : EndpointGroupBase
 
         #region CuentaBancaria
         group.MapGet("cuenta-bancaria/", GetCuentasBancarias)
-            .WithName("CF_GetCuentasBancarias")
+            .WithName("GetCuentasBancarias")
             .WithSummary("Obtiene cuentas bancarias filtradas y paginadas")
             .Produces<ApiResponseDto<PagedResultDto<CuentaBancariaListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("cuenta-bancaria/{id}", GetCuentaBancariaById)
-            .WithName("CF_GetCuentaBancariaById")
+            .WithName("GetCuentaBancariaById")
             .WithSummary("Obtiene una cuenta bancaria por ID")
             .Produces<ApiResponseDto<CuentaBancariaEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -136,7 +136,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPost("cuenta-bancaria/{personaId}", CreateCuentaBancaria)
-            .WithName("CF_CreateCuentaBancaria")
+            .WithName("CreateCuentaBancaria")
             .WithSummary("Crea una nueva cuenta bancaria para una persona")
             .Accepts<CuentaBancariaEditDto>("application/json")
             .Produces<ApiResponseDto>(StatusCodes.Status200OK)
@@ -145,7 +145,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPut("cuenta-bancaria/{id}", UpdateCuentaBancaria)
-            .WithName("CF_UpdateCuentaBancaria")
+            .WithName("UpdateCuentaBancaria")
             .WithSummary("Actualiza una cuenta bancaria")
             .Accepts<CuentaBancariaEditDto>("application/json")
             .Produces(StatusCodes.Status200OK)
@@ -155,7 +155,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapDelete("cuenta-bancaria/{id}", DeleteCuentaBancaria)
-            .WithName("CF_DeleteCuentaBancaria")
+            .WithName("DeleteCuentaBancaria")
             .WithSummary("Elimina una cuenta bancaria por ID")
             .Produces(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -165,14 +165,14 @@ public class Clientes : EndpointGroupBase
 
         #region Telefono
         group.MapGet("telefono/", GetTelefonos)
-            .WithName("CF_GetTelefonos")
+            .WithName("GetTelefonos")
             .WithSummary("Obtiene teléfonos filtrados y paginados")
             .Produces<ApiResponseDto<PagedResultDto<TelefonoListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("telefono/{id}", GetTelefonoById)
-            .WithName("CF_GetTelefonoById")
+            .WithName("GetTelefonoById")
             .WithSummary("Obtiene un teléfono por ID")
             .Produces<ApiResponseDto<TelefonoEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -180,7 +180,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPut("telefono/{id}", UpdateTelefono)
-            .WithName("CF_UpdateTelefono")
+            .WithName("UpdateTelefono")
             .WithSummary("Actualiza un teléfono")
             .Accepts<TelefonoEditDto>("application/json")
             .Produces(StatusCodes.Status200OK)
@@ -190,7 +190,7 @@ public class Clientes : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapDelete("telefono/{id}", DeleteTelefono)
-            .WithName("CF_DeleteTelefono")
+            .WithName("DeleteTelefono")
             .WithSummary("Elimina un teléfono por ID")
             .Produces(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -201,7 +201,7 @@ public class Clientes : EndpointGroupBase
         #region Perfiles y Secciones
 
         group.MapPost("seccion-persona/sync", SyncSeccionPersona)
-               .WithName("CF_SyncSeccionPersona")
+               .WithName("SyncSeccionPersona")
                .WithSummary("Sincroniza las secciones de persona")
                .WithDescription("Sincroniza las secciones de persona, creando, actualizando y desactivando según la lista recibida")
                .Accepts<List<SeccionPersonaDto>>("application/json")
@@ -211,14 +211,14 @@ public class Clientes : EndpointGroupBase
                .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("perfiles/activos", GetPerfilesActivos)
-            .WithName("CF_GetPerfilesActivos")
+            .WithName("GetPerfilesActivos")
             .WithSummary("Obtiene los perfiles activos")
             .Produces<ApiResponseDto<List<PerfilDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("secciones/by-perfil/{perfilId}", GetSeccionesByPerfilId)
-            .WithName("CF_GetSeccionesByPerfilId")
+            .WithName("GetSeccionesByPerfilId")
             .WithSummary("Obtiene las secciones por ID de perfil")
             .Produces<ApiResponseDto<List<SeccionPersonaDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)

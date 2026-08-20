@@ -14,7 +14,7 @@ public class Catalogos : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Crédito - Catalogos");
+            .WithTags("Credito - Catalogos");
 
         
     }

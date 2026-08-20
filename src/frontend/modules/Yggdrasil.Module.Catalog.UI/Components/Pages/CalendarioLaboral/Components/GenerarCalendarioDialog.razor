@@ -1,0 +1,59 @@
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-4">Genera los días del calendario laboral para el año indicado. Los días ya existentes no se duplican.</MudText>
+        <MudNumericField T="int" @bind-Value="_anio"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Label="Año"
+                          Min="2000"
+                          Max="2100" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Disabled="_generando"
+                   OnClick="Generar">
+            Generar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+    [Parameter] public int Anio { get; set; } = DateTime.Today.Year;
+
+    private int _anio;
+    private bool _generando;
+
+    protected override void OnInitialized() => _anio = Anio;
+
+    private async Task Generar()
+    {
+        _generando = true;
+        try
+        {
+            var result = await _catalogoApi.CreateCalendarioLaboralAsync(_anio);
+            _snackbarService.Add(result.Message, Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _generando = false;
+        }
+    }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}

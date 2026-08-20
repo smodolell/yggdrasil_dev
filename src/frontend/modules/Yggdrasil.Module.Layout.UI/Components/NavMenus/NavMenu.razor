@@ -1,4 +1,5 @@
-﻿<MudDrawer @bind-Open="_layoutState.NavIsOpen"
+﻿@implements IDisposable
+<MudDrawer @bind-Open="_layoutState.NavIsOpen"
            ClipMode="DrawerClipMode.Never"
            Elevation="2">
     <MudDrawerHeader Class="d-flex align-center">
@@ -12,8 +13,8 @@
         }
     </MudDrawerHeader>
     <MudNavMenu Margin="Margin.Dense" Dense="true" Color="Color.Primary" Rounded="true" Class="pa-2">
-        <MudText Typo="Typo.h6" Class="px-4">Material</MudText>
-        <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">Icons</MudText>
+        <MudText Typo="Typo.h6" Class="px-4" Style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@_fullName</MudText>
+        <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary" Style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@_userName</MudText>
         <MudDivider Class="my-2" />
         @if (NavMenuItems == null)
         {

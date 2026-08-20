@@ -49,6 +49,13 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(authState);
     }
 
+    // Punto único para cerrar sesión: limpia el token y notifica a la app
+    public async Task LogoutAsync()
+    {
+        await _js.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        NotifyUserLogout();
+    }
+
     //private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     //{
     //    var payload = jwt.Split('.')[1];

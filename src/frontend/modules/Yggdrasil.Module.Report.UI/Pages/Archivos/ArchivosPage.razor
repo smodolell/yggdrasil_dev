@@ -1,0 +1,6 @@
+@attribute [Route(PageRoute.ArchivosPage)]
+@attribute [AccessPoint(AppMenu.MenuReporte, "Archivos Generados")]
+@using Yggdrasil.Module.Report.UI.Pages.Archivos.Components
+
+<PageHeader Title="Archivos Generados" Icon="@Icons.Material.Filled.FolderOpen"></PageHeader>
+<ArchivoList></ArchivoList>

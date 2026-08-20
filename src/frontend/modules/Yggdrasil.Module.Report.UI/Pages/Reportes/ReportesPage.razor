@@ -1,0 +1,7 @@
+@attribute [Route(PageRoute.ReportesPage)]
+@attribute [AccessPoint(AppMenu.MenuConfiguracion, "Reportes")]
+@attribute [Authorize]
+@using Yggdrasil.Module.Report.UI.Pages.Reportes.Components
+
+<PageHeader Title="Configuración de Reportes" Icon="@AppMenu.MenuReporteIcon"></PageHeader>
+<ReporteList></ReporteList>

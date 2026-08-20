@@ -23,7 +23,7 @@ public class Operaciones : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Crédito - Operaciones");
+            .WithTags("Credito - Operaciones");
 
      
 
@@ -53,7 +53,7 @@ public class Operaciones : EndpointGroupBase
             .Produces<ApiResponseDto<int>>(StatusCodes.Status500InternalServerError);
 
         group.MapPut("credito/{id}", UpdateCredito)
-            .WithName("CF_UpdateCredito")
+            .WithName("UpdateCredito")
             .WithSummary("Actualiza los datos de un crédito")
             .Accepts<CreditoEditDto>("application/json")
             .Produces<ApiResponseDto>(StatusCodes.Status200OK)
@@ -63,7 +63,7 @@ public class Operaciones : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPost("credito/{id}/activar", ActivarCredito)
-            .WithName("CF_ActivarCredito")
+            .WithName("ActivarCredito")
             .WithSummary("Activa un crédito mediante el procedimiento almacenado")
             .Produces<ApiResponseDto<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
@@ -77,7 +77,7 @@ public class Operaciones : EndpointGroupBase
         [FromServices] IQueryMediator queryMediator,
         [FromRoute] int personaId)
     {
-        var result = await queryMediator.QueryAsync(new GetNewCreditoQuery { PersonaId = personaId });
+        var result = await queryMediator.QueryAsync(new GetNewCreditoQuery(personaId));
         return result.ToCustomMinimalApiResult();
     }
 

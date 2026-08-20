@@ -1,0 +1,159 @@
+@attribute [Route(PageRoute.CreditoActivar + "/{CreditoId:int}")]
+@attribute [AccessPoint(AppMenu.MenuOperacion, "Activación de Crédito Simple", Yggdrasil.Blazor.DTOs.AccessPointType.Page)]
+
+<PageHeader Title="Activación de Crédito Simple" Icon="@AppMenu.MenuOperacionIcon">
+    <MudBreadcrumbs Items="_items" />
+</PageHeader>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Class="my-4" />
+}
+else if (_credito != null)
+{
+    <MudCard Outlined="true" Class="mb-3">
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Clave</MudText>
+                    <MudText Typo="Typo.h6">@_credito.ClaveCredito</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Tipo de Crédito</MudText>
+                    <MudText Typo="Typo.h6">@_credito.NomTipoCredito</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Capital</MudText>
+                    <MudText Typo="Typo.h6">@_credito.Capital.ToString("N2")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Estatus</MudText>
+                    <MudChip T="string" Color="@EstatusColor(_credito.NomEstatusCredito)" Size="Size.Small" Class="mt-1">@_credito.NomEstatusCredito</MudChip>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Fecha Inicio</MudText>
+                    <MudText Typo="Typo.h6">@_credito.FechaInicio.ToString("dd/MM/yyyy")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Fecha Primera Renta</MudText>
+                    <MudText Typo="Typo.h6">@_credito.FechaPrimeraRenta.ToString("dd/MM/yyyy")</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    @if (_credito.EstatusCreditoId != 1)
+    {
+        <MudAlert Severity="Severity.Info" Class="mb-3">
+            Este crédito no está pendiente de activación
+            (estatus actual: <strong>@_credito.NomEstatusCredito</strong>@(_credito.FechaActivacion.HasValue ? $", activado el {_credito.FechaActivacion.Value:dd/MM/yyyy}" : "")).
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="VolverAlDetalle">
+            Volver al Detalle
+        </MudButton>
+    }
+    else
+    {
+        <MudCard Outlined="true" Elevation="0" Class="border-none bg-transparent">
+            <MudCardContent Class="pa-0">
+                <MudText Class="mb-4">Confirma la fecha en la que este crédito quedará activo. A partir de esa fecha se considerará vigente para efectos de cobranza.</MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Date="_fechaActivacion"
+                                       DateChanged="@(d => _fechaActivacion = d)"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Label="Fecha de Activación"
+                                       Editable="true" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+            <MudCardActions Class="pa-0 mt-4">
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Medium"
+                               StartIcon="@Icons.Material.Filled.CheckCircle"
+                               Disabled="_activando"
+                               OnClick="Activar">
+                        Activar Crédito
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               Size="Size.Medium"
+                               StartIcon="@Icons.Material.Filled.Close"
+                               OnClick="VolverAlDetalle">
+                        Cancelar
+                    </MudButton>
+                </MudStack>
+            </MudCardActions>
+        </MudCard>
+    }
+}
+
+@code {
+    [Parameter] public int CreditoId { get; set; }
+
+    private CreditoCsDetailDto? _credito;
+    private DateTime? _fechaActivacion = DateTime.Today;
+    private bool _loading;
+    private bool _activando;
+
+    private List<BreadcrumbItem> _items =>
+    [
+        new BreadcrumbItem("Créditos Simples", href: ("." + PageRoute.CreditosPage), icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("Detalle", href: ("." + PageRoute.CreditoDetail + $"/{CreditoId}"), icon: AppMenu.MenuOperacionIcon),
+        new BreadcrumbItem("Activación", href: null, disabled: true)
+    ];
+
+    protected override async Task OnInitializedAsync() => await CargarCredito();
+
+    private async Task CargarCredito()
+    {
+        _loading = true;
+        try
+        {
+            var result = await _creditosApi.GetCSCreditoDetailAsync(CreditoId);
+            _credito = result.Data;
+            _fechaActivacion = _credito?.FechaActivacion ?? DateTime.Today;
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar el crédito");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task Activar()
+    {
+        _activando = true;
+        try
+        {
+            await _operacionApi.CSActivarCreditoAsync(CreditoId, _fechaActivacion);
+            _snackbarService.Add("Crédito activado correctamente", Severity.Success);
+            _navManager.NavigateTo("." + PageRoute.CreditoDetail + $"/{CreditoId}");
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al activar el crédito");
+        }
+        finally
+        {
+            _activando = false;
+        }
+    }
+
+    private void VolverAlDetalle() => _navManager.NavigateTo("." + PageRoute.CreditoDetail + $"/{CreditoId}");
+
+    private static Color EstatusColor(string? nomEstatus) => nomEstatus?.Trim().ToLowerInvariant() switch
+    {
+        "activo" => Color.Success,
+        "liquidado" => Color.Default,
+        "cancelado" => Color.Error,
+        "bloqueado" => Color.Warning,
+        _ => Color.Default
+    };
+}

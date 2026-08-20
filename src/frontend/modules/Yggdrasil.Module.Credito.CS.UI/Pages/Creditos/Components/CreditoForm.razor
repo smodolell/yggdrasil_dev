@@ -1,0 +1,260 @@
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Class="my-4" />
+}
+else
+{
+    <MudCard Outlined="true" Elevation="0" Class="border-none bg-transparent">
+        <MudCardContent Class="pa-0">
+            <EditForm Model="_model" OnValidSubmit="Guardar" id="CreditoCapturaForm">
+                <FluentValidator />
+                <FormSection Title="Informacio general">
+                    <MudGrid>
+                        <MudItem xs="12" sm="4">
+                            <MudSelect T="int" @bind-Value="_model.TipoCreditoId" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Tipo de Crédito" For="@(() => _model.TipoCreditoId)">
+                                @foreach (var tipoCredito in _tiposCredito)
+                                {
+                                    <MudSelectItem T="int" Value="@Convert.ToInt32(tipoCredito.Value)">@tipoCredito.Text</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        @if (_currentId.HasValue)
+                        {
+                            <MudItem xs="12" sm="4">
+                                <MudTextField T="string" Value="@_model.ClaveCredito" Label="Clave" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" Disabled="true" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+                 
+
+                </FormSection>
+                <MudGrid>
+                   
+
+              
+                    <MudItem xs="12" sm="4">
+                        <MudSelect T="int" @bind-Value="_model.PeriodicidadId" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Periodicidad" For="@(() => _model.PeriodicidadId)">
+                            @foreach (var periodicidad in _periodicidades)
+                            {
+                                <MudSelectItem T="int" Value="@Convert.ToInt32(periodicidad.Value)">@periodicidad.Text</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudSelect T="int" @bind-Value="_model.MetodoArmotizacionId" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Método de Amortización" For="@(() => _model.MetodoArmotizacionId)">
+                            @foreach (var metodo in _metodosAmortizacion)
+                            {
+                                <MudSelectItem T="int" Value="@Convert.ToInt32(metodo.Value)">@metodo.Text</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Date="_model.FechaInicio" DateChanged="@(d => _model.FechaInicio = d ?? _model.FechaInicio)" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Fecha de Inicio" Editable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Date="_model.FechaPrimeraRenta" DateChanged="@(d => _model.FechaPrimeraRenta = d ?? _model.FechaPrimeraRenta)" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Fecha de Primera Renta" Editable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Date="_model.FechaFirmaContrato" DateChanged="@(d => _model.FechaFirmaContrato = d)" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Fecha de Firma de Contrato" Editable="true" Clearable="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4">
+                        <MudNumericField @bind-Value="_model.Capital" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Capital" For="@(() => _model.Capital)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudNumericField @bind-Value="_model.Tasa" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Tasa (%)" For="@(() => _model.Tasa)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudNumericField @bind-Value="_model.TasaIva" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Tasa IVA (%)" For="@(() => _model.TasaIva)" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4">
+                        <MudNumericField @bind-Value="_model.Plazo" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Plazo (No. de pagos)" For="@(() => _model.Plazo)" />
+                    </MudItem>
+
+                    @if (_model.MetodoArmotizacionId == (int)AmortizationMethod.ImportExcel)
+                    {
+                        <MudItem xs="12" sm="8">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                <MudFileUpload T="IBrowserFile" FilesChanged="OnFileChanged" Accept=".xlsx,.xls">
+                                    <CustomContent Context="file">
+                                        <MudButton Variant="Variant.Outlined"
+                                                   Color="Color.Primary"
+                                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                                            Cargar Archivo Excel
+                                        </MudButton>
+                                    </CustomContent>
+                                </MudFileUpload>
+                                @if (!string.IsNullOrEmpty(_model.NombreArchivoExcel))
+                                {
+                                    <MudChip T="string" Icon="@Icons.Material.Filled.Description" Color="Color.Info">@_model.NombreArchivoExcel</MudChip>
+                                }
+                            </MudStack>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </EditForm>
+        </MudCardContent>
+        <MudCardActions Class="pa-0 mt-4">
+            <MudStack Row="true" Spacing="2">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Medium"
+                           ButtonType="ButtonType.Submit"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           form="CreditoCapturaForm">
+                    Guardar
+                </MudButton>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Default"
+                           Size="Size.Medium"
+                           StartIcon="@Icons.Material.Filled.Close"
+                           OnClick="Cancelar">
+                    Cancelar
+                </MudButton>
+            </MudStack>
+        </MudCardActions>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public int? CreditoId { get; set; }
+    [Parameter] public EventCallback<int> OnSaved { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private int? _currentId;
+    private CreditoCSEditDto _model = NuevoModelo();
+    private bool _loading;
+    private List<Yggdrasil.ApiClient.Contracts.SelectListItemDto> _tiposCredito = [];
+    private List<Yggdrasil.ApiClient.Contracts.SelectListItemDto> _periodicidades = [];
+    private List<Yggdrasil.ApiClient.Contracts.SelectListItemDto> _metodosAmortizacion = [];
+
+    private enum AmortizationMethod { French = 1, German = 2, American = 3, BBVA = 4, ImportExcel = 5 }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentId = CreditoId;
+        await LoadListsAsync();
+        await CargarCredito();
+    }
+
+    /// <summary>Recarga el formulario para el crédito indicado y entra en modo edición. Se usa después de guardar.</summary>
+    public async Task ReloadAsync(int creditoId)
+    {
+        _currentId = creditoId;
+        await CargarCredito();
+        StateHasChanged();
+    }
+
+    private async Task LoadListsAsync()
+    {
+        try
+        {
+            var tiposCreditoTask = _selectListCSApi.GetCSTipoCreditoSelectListAsync(string.Empty, null);
+            var periodicidadesTask = _selectListCatalogoApi.GetPeriodicidadSelectListAsync(string.Empty, null);
+            var metodosAmortizacionTask = _selectListCSApi.GetCSMetodoArmotizacionSelectListAsync(string.Empty, null);
+            await Task.WhenAll(tiposCreditoTask, periodicidadesTask, metodosAmortizacionTask);
+
+            _tiposCredito = tiposCreditoTask.Result.Data?.ToList() ?? [];
+            _periodicidades = periodicidadesTask.Result.Data?.ToList() ?? [];
+            _metodosAmortizacion = metodosAmortizacionTask.Result.Data?.ToList() ?? [];
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar los catálogos");
+        }
+    }
+
+    private async Task CargarCredito()
+    {
+        _loading = true;
+        try
+        {
+            if (_currentId.HasValue)
+            {
+                var result = await _creditosApi.GetCSCreditoDetailAsync(_currentId.Value);
+                var detail = result.Data;
+                if (detail != null)
+                {
+                    _model = new CreditoCSEditDto
+                    {
+                        TipoCreditoId = detail.TipoCreditoId,
+                        PeriodicidadId = detail.PeriodicidadId,
+                        EstatusCreditoId = detail.EstatusCreditoId,
+                        MetodoArmotizacionId = detail.MetodoArmotizacionId,
+                        FechaInicio = detail.FechaInicio,
+                        FechaPrimeraRenta = detail.FechaPrimeraRenta,
+                        FechaFirmaContrato = detail.FechaFirmaContrato,
+                        FechaActivacion = detail.FechaActivacion,
+                        ClaveCredito = detail.ClaveCredito,
+                        Capital = detail.Capital,
+                        Tasa = detail.Tasa,
+                        TasaIva = detail.TasaIva,
+                        Plazo = detail.Plazo
+                    };
+                }
+            }
+            else
+            {
+                _model = NuevoModelo();
+            }
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar los datos del crédito");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static CreditoCSEditDto NuevoModelo() => new()
+    {
+        FechaInicio = DateTime.Today,
+        FechaPrimeraRenta = DateTime.Today,
+        MetodoArmotizacionId = (int)AmortizationMethod.French,
+        Plazo = 12
+    };
+
+    private async Task OnFileChanged(IBrowserFile file)
+    {
+        if (file == null) return;
+
+        try
+        {
+            _model.NombreArchivoExcel = file.Name;
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            _model.ExcelFileBytes = ms.ToArray();
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al leer el archivo Excel");
+        }
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            _model.EsImportacionExcel = _model.MetodoArmotizacionId == (int)AmortizationMethod.ImportExcel;
+
+            var result = _currentId.HasValue
+                ? await _operacionApi.CSActualizarCreditoAsync(_currentId.Value, _model)
+                : await _operacionApi.CSCapturarCreditoAsync(_model);
+
+            _snackbarService.Add(_currentId.HasValue ? "Crédito actualizado correctamente" : "Crédito capturado correctamente", Severity.Success);
+
+            await OnSaved.InvokeAsync(result.Data);
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al guardar el crédito");
+        }
+    }
+
+    private async Task Cancelar() => await OnCancel.InvokeAsync();
+}

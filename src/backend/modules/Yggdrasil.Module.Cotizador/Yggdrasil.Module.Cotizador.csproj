@@ -9,4 +9,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Yggdrasil.Common\Yggdrasil.Common.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Configuracion\Planes\DTOs\" />
+  </ItemGroup>
 </Project>

@@ -2,10 +2,7 @@
 
 namespace Yggdrasil.Module.Credito.Features.Operaciones.CapturaCredito.Queries;
 
-public class GetNewCreditoQuery : IQuery<Result<CreditoEditDto>>
-{
-    public int PersonaId { get; set; }
-}
+public record GetNewCreditoQuery(int PersonaId) : IQuery<Result<CreditoEditDto>>;
 
 internal class GetNewCreditoQueryHandler(IApplicationDbContext context, IMapper mapper) : IQueryHandler<GetNewCreditoQuery, Result<CreditoEditDto>>
 {

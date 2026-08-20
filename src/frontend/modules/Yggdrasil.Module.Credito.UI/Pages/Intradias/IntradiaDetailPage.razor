@@ -1,0 +1,322 @@
+@attribute [Route(PageRoute.IntradiaDetail + "/{CreditoId:guid}")]
+@attribute [AccessPoint(AppMenu.MenuCobranza, "Detalle Crédito Intradía", Yggdrasil.Blazor.DTOs.AccessPointType.Page)]
+@using Yggdrasil.Module.Credito.UI.Pages.Intradias.Components
+
+<PageHeader Title="Detalle Crédito Intradía" Icon="@AppMenu.MenuCobranzaIcon">
+    <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+</PageHeader>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Class="my-4" />
+}
+else if (_credito != null)
+{
+    <MudCard Outlined="true" Class="mb-3">
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Monto Otorgado</MudText>
+                    <MudText Typo="Typo.h6">@_credito.MontoOtorgado.ToString("N2")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Capital</MudText>
+                    <MudText Typo="Typo.h6">@_credito.Capital.ToString("N2")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Tasa</MudText>
+                    <MudText Typo="Typo.h6">@_credito.Tasa.ToString("N2")%</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Tasa IVA</MudText>
+                    <MudText Typo="Typo.h6">@_credito.TasaIva.ToString("N2")%</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Fecha Primera Renta</MudText>
+                    <MudText Typo="Typo.h6">@_credito.FechaPrimeraRenta.ToString("dd/MM/yyyy")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Estado</MudText>
+                    <MudChip T="string" Color="@EstadoColor(_credito.Estado)" Size="Size.Small" Class="mt-1">@EstadoTexto(_credito.Estado)</MudChip>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+        <MudCardActions Class="px-4 pb-4">
+            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Outlined.Edit" OnClick="EditClick">Editar</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.TrendingUp" OnClick="DevengarClick">Devengar</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => OpenMontoDialog(TipoOperacion.Disposicion))">Disposición</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.Remove" OnClick="@(() => OpenMontoDialog(TipoOperacion.PagoCapital))">Pago Capital</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.Percent" OnClick="@(() => OpenMontoDialog(TipoOperacion.PagoInteres))">Pago Interés</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.Payments" OnClick="@(() => OpenMontoDialog(TipoOperacion.Prepago))">Prepago</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Outlined.CheckCircle" OnClick="LiquidacionClick">Liquidación</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Outlined.DeleteSweep" OnClick="EliminarMovimientosClick">Eliminar Movimientos</MudButton>
+            </MudStack>
+        </MudCardActions>
+    </MudCard>
+
+    <MudTabs Elevation="0" Rounded="true" Outlined="true" Border="true" ApplyEffectsToContainer="true">
+        <MudTabPanel Text="Movimientos">
+            <MudTable Items="_credito.Movimientos" Dense="true" Hover="true" Class="mt-2">
+                <HeaderContent>
+                    <MudTh>#</MudTh>
+                    <MudTh>Fecha</MudTh>
+                    <MudTh>Concepto</MudTh>
+                    <MudTh Style="text-align:right;">Capital</MudTh>
+                    <MudTh Style="text-align:right;">Interés</MudTh>
+                    <MudTh Style="text-align:right;">IVA</MudTh>
+                    <MudTh Style="text-align:right;">Saldo Insoluto</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Nro</MudTd>
+                    <MudTd>@context.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd>@context.Concepto</MudTd>
+                    <MudTd Style="text-align:right;">@context.Capital.ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right;">@context.Interes.ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right;">@context.Iva.ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right;">@context.SaldoInsolutoResultante.ToString("N2")</MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4">No hay movimientos registrados</MudText>
+                </NoRecordsContent>
+                <FooterContent>
+                    <MudTd colspan="3"><MudText Typo="Typo.subtitle2">Total</MudText></MudTd>
+                    <MudTd Style="text-align:right;"><MudText Typo="Typo.subtitle2">@_credito.Movimientos.Sum(m => m.Capital).ToString("N2")</MudText></MudTd>
+                    <MudTd Style="text-align:right;"><MudText Typo="Typo.subtitle2">@_credito.Movimientos.Sum(m => m.Interes).ToString("N2")</MudText></MudTd>
+                    <MudTd Style="text-align:right;"><MudText Typo="Typo.subtitle2">@_credito.Movimientos.Sum(m => m.Iva).ToString("N2")</MudText></MudTd>
+                    <MudTd></MudTd>
+                </FooterContent>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Text="Intereses Acumulados">
+            <MudTable Items="_credito.InteresesAcumulados" Dense="true" Hover="true" Class="mt-2">
+                <HeaderContent>
+                    <MudTh>Fecha Inicio</MudTh>
+                    <MudTh>Fecha Cálculo</MudTh>
+                    <MudTh Style="text-align:right;">Días</MudTh>
+                    <MudTh Style="text-align:right;">Saldo Capital</MudTh>
+                    <MudTh Style="text-align:right;">Interés</MudTh>
+                    <MudTh Style="text-align:right;">IVA</MudTh>
+                    <MudTh Style="text-align:right;">Saldo Insoluto</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.FechaInicio.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd>@context.FechaCalculo.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd Style="text-align:right;">@context.Dias</MudTd>
+                    <MudTd Style="text-align:right;">@context.SaldoCapital.ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right;">@context.Interes.ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right;">@context.Iva.ToString("N2")</MudTd>
+                    <MudTd Style="text-align:right;">@context.SaldoInsoluto.ToString("N2")</MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4">No hay intereses acumulados</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+    </MudTabs>
+}
+
+@code {
+    [Parameter] public Guid CreditoId { get; set; }
+
+    private CreditoIntraDiaDetailDto? _credito;
+    private bool _loading;
+
+    private enum TipoOperacion { Disposicion, PagoCapital, PagoInteres, Prepago }
+
+    private List<BreadcrumbItem> _items => new()
+    {
+        new BreadcrumbItem("Créditos Intradía", href: ("." + PageRoute.IntradiasPage), icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("Detalle", href: null, icon: AppMenu.MenuCobranzaIcon, disabled: true)
+    };
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        CloseButton = true,
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true
+    };
+
+    protected override async Task OnInitializedAsync() => await CargarDatos();
+
+    private async Task CargarDatos()
+    {
+        _loading = true;
+        try
+        {
+            var result = await _intradiasApi.CobGetCreditoIntraDiaDetailAsync(CreditoId);
+            _credito = result.Data;
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al cargar el crédito intradía");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string EstadoTexto(int estado) => estado switch
+    {
+        1 => "Activo",
+        2 => "Liquidado",
+        3 => "Bloqueado",
+        _ => "Desconocido"
+    };
+
+    private static Color EstadoColor(int estado) => estado switch
+    {
+        1 => Color.Success,
+        2 => Color.Default,
+        3 => Color.Error,
+        _ => Color.Default
+    };
+
+    private async Task EditClick()
+    {
+        var parameters = new DialogParameters { { nameof(CreditoIntraDiaFormDialog.CreditoId), CreditoId } };
+        var dialog = await _dialogService.ShowAsync<CreditoIntraDiaFormDialog>("Editar Crédito Intradía", parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled) await CargarDatos();
+    }
+
+    private async Task DevengarClick()
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(FechaOperationDialog.CreditoId), CreditoId },
+            { nameof(FechaOperationDialog.Mensaje), "¿Desea devengar el interés acumulado de este crédito?" },
+            { nameof(FechaOperationDialog.FechaLabel), "Fecha de Devengamiento" },
+            { nameof(FechaOperationDialog.SubmitText), "Devengar" },
+            { nameof(FechaOperationDialog.OnSubmitAsync),
+                (Func<Guid, DateTime, Task<ApiResponseDto>>)((id, fecha) =>
+                    _intradiasApi.CobDevengarCreditoIntraDiaAsync(id, fecha)) }
+        };
+
+        var dialog = await _dialogService.ShowAsync<FechaOperationDialog>("Devengar", parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled) await CargarDatos();
+    }
+
+    private async Task LiquidacionClick()
+    {
+        DateTime? fechaSugerida;
+        try
+        {
+            var liquidacionResult = await _intradiasApi.CobGetLiquidacionIntraDiaAsync(CreditoId);
+            fechaSugerida = liquidacionResult.Data?.FechaLiquidacion;
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al calcular la fecha de liquidación");
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            { nameof(FechaOperationDialog.CreditoId), CreditoId },
+            { nameof(FechaOperationDialog.Mensaje), "¿Desea liquidar el saldo total (capital, interés e IVA) de este crédito? Esta acción no se puede deshacer." },
+            { nameof(FechaOperationDialog.FechaLabel), "Fecha de Liquidación" },
+            { nameof(FechaOperationDialog.SubmitText), "Liquidar" },
+            { nameof(FechaOperationDialog.FechaValue), fechaSugerida },
+            { nameof(FechaOperationDialog.FechaReadOnly), true },
+            { nameof(FechaOperationDialog.OnSubmitAsync),
+                (Func<Guid, DateTime, Task<ApiResponseDto>>)((id, fecha) =>
+                    _intradiasApi.CobLiquidacionIntraDiaAsync(new LiquidacionDto { CreditoId = id, FechaLiquidacion = fecha })) }
+        };
+
+        var dialog = await _dialogService.ShowAsync<FechaOperationDialog>("Liquidación", parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled) await CargarDatos();
+    }
+
+    private async Task EliminarMovimientosClick()
+    {
+        await _dialogService.ShowConfirmDialog(
+            "¿Desea eliminar todos los movimientos y el interés acumulado registrados de este crédito? Esta acción no se puede deshacer.",
+            "Eliminar Movimientos",
+            async (e) =>
+            {
+                try
+                {
+                    var result = await _intradiasApi.CobEliminarMovimientosIntraDiaAsync(CreditoId);
+                    _snackbarService.Add(result.Message, Severity.Success);
+                    await CargarDatos();
+                }
+                catch (YggdrasilApiException ex)
+                {
+                    _snackbarService.Add(ex.GetSnackbarMessage(), Severity.Error);
+                }
+                catch (Exception ex)
+                {
+                    _snackbarService.Add(ex.Message, Severity.Error);
+                }
+            });
+    }
+
+    private async Task OpenMontoDialog(TipoOperacion tipo)
+    {
+        DateTime? fechaSugerida = null;
+        var fechaReadOnly = false;
+
+        try
+        {
+            switch (tipo)
+            {
+                case TipoOperacion.Disposicion:
+                    var disposicionResult = await _intradiasApi.CobGetNewDisposicionIntraDiaAsync(CreditoId);
+                    fechaSugerida = disposicionResult.Data?.FechaDisposicion;
+                    fechaReadOnly = true;
+                    break;
+                case TipoOperacion.PagoCapital:
+                    var pagoCapitalResult = await _intradiasApi.CobGetPagoCapitalIntraDiaAsync(CreditoId);
+                    fechaSugerida = pagoCapitalResult.Data?.FechaPago;
+                    fechaReadOnly = true;
+                    break;
+                case TipoOperacion.PagoInteres:
+                    var pagoInteresResult = await _intradiasApi.CobGetPagoInteresIntraDiaAsync(CreditoId);
+                    fechaSugerida = pagoInteresResult.Data?.FechaPago;
+                    fechaReadOnly = true;
+                    break;
+                case TipoOperacion.Prepago:
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowErrorDialog(ex, "Error al calcular la fecha sugerida");
+            return;
+        }
+
+        var (title, fechaLabel, submit) = tipo switch
+        {
+            TipoOperacion.Disposicion => ("Disposición de Capital", "Fecha de Disposición",
+                (Func<Guid, decimal, DateTime, Task<ApiResponseDto>>)((id, monto, fecha) =>
+                    _intradiasApi.CobNewDisposicionIntraDiaAsync(new NewDisposicionDto { CreditoId = id, Monto = (double)monto, FechaDisposicion = fecha }))),
+            TipoOperacion.PagoCapital => ("Pago a Capital", "Fecha de Pago",
+                (Func<Guid, decimal, DateTime, Task<ApiResponseDto>>)((id, monto, fecha) =>
+                    _intradiasApi.CobPagoCapitalIntraDiaAsync(new PagoCapitalDto { CreditoId = id, Monto = (double)monto, FechaPago = fecha }))),
+            TipoOperacion.PagoInteres => ("Pago a Intereses", "Fecha de Pago",
+                (Func<Guid, decimal, DateTime, Task<ApiResponseDto>>)((id, monto, fecha) =>
+                    _intradiasApi.CobPagoInteresIntraDiaAsync(new PagoInteresDto { CreditoId = id, Monto = (double)monto, FechaPago = fecha }))),
+            TipoOperacion.Prepago => ("Prepago", "Fecha de Pago",
+                (Func<Guid, decimal, DateTime, Task<ApiResponseDto>>)((id, monto, fecha) =>
+                    _intradiasApi.CobPrepagoIntraDiaAsync(new PrepagoDto { CreditoId = id, Monto = (double)monto, FechaPago = fecha }))),
+            _ => throw new NotSupportedException()
+        };
+
+        var parameters = new DialogParameters
+        {
+            { nameof(MontoOperationDialog.CreditoId), CreditoId },
+            { nameof(MontoOperationDialog.FechaLabel), fechaLabel },
+            { nameof(MontoOperationDialog.OnSubmitAsync), submit },
+            { nameof(MontoOperationDialog.FechaValue), fechaSugerida },
+            { nameof(MontoOperationDialog.FechaReadOnly), fechaReadOnly }
+        };
+
+        var dialog = await _dialogService.ShowAsync<MontoOperationDialog>(title, parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (!result!.Canceled) await CargarDatos();
+    }
+}

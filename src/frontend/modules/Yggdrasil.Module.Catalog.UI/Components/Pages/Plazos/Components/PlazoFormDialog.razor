@@ -1,8 +1,4 @@
-﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-
-<MudDialog>
+﻿<MudDialog>
     <DialogContent>
         <EditForm Model="_model" OnValidSubmit="UpdateSumbit" id="MyID">
             <DataAnnotationsValidator />
@@ -56,8 +52,8 @@
     {
         try
         {
-            await _catalogosApi.CreatePlazo(_model);
-            _snackbarService.Add("OKAS", Severity.Success);
+            await _catalogoApi.CreatePlazoAsync(_model);
+            _snackbarService.Add("Plazo guardado correctamente", Severity.Success);
             MudDialog?.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)

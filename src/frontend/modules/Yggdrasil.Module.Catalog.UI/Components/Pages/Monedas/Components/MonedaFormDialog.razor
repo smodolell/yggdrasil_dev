@@ -1,7 +1,3 @@
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-
 <MudDialog>
     <DialogContent>
         <EditForm Model="_model" OnValidSubmit="SaveSubmit" id="MonedaFormId">
@@ -71,7 +67,7 @@
 
     private async Task InitialData()
     {
-        var result = await _catalogosApi.GetMonedaById(MonedaId);
+        var result = await _catalogoApi.GetMonedaByIdAsync(MonedaId);
         if (result.Success)
         {
             _model = result.Data!;
@@ -84,29 +80,15 @@
         {
             if (MonedaId == 0)
             {
-                var result = await _catalogosApi.CreateMoneda(_model);
-                if (result.Success)
-                {
-                    _snackbarService.Add(result.Message, Severity.Success);
-                    MudDialog?.Close(DialogResult.Ok(true));
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
-                }
+                var result = await _catalogoApi.CreateMonedaAsync(_model);
+                _snackbarService.Add(result.Message, Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
             }
             else
             {
-                var result = await _catalogosApi.UpdateMoneda(MonedaId, _model);
-                if (result.Success)
-                {
-                    _snackbarService.Add(result.Message, Severity.Success);
-                    MudDialog?.Close(DialogResult.Ok(true));
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors.FirstOrDefault() ?? "Error", Severity.Error);
-                }
+                await _catalogoApi.UpdateMonedaAsync(MonedaId, _model);
+                _snackbarService.Add("Moneda actualizada correctamente", Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
             }
         }
         catch (Exception ex)

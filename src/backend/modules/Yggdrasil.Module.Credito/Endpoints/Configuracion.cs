@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Yggdrasil.Common.Endpoint;
 using Yggdrasil.Common.Extensions;
-using Yggdrasil.Module.Credito.Features.Configuracion.CalendarioLaboral.Commands;
-using Yggdrasil.Module.Credito.Features.Configuracion.CalendarioLaboral.DTOs;
-using Yggdrasil.Module.Credito.Features.Configuracion.CalendarioLaboral.Queries;
 using Yggdrasil.Module.Credito.Features.Configuracion.Perfil.Commands;
 using Yggdrasil.Module.Credito.Features.Configuracion.Perfil.DTOs;
 using Yggdrasil.Module.Credito.Features.Configuracion.Perfil.Queries;
@@ -26,11 +23,11 @@ public class Configuracion : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-           .WithTags("Crédito - Configuración");
+           .WithTags("Credito - Configuracion");
 
         #region TipoMovimiento
         group.MapGet("tipo-movimiento/{id}/edit", GetTipoMovimientoById)
-            .WithName("CF_GetTipoMovimientoById")
+            .WithName("GetTipoMovimientoById")
             .WithSummary("Obtiene un tipo de movimiento por ID para edición")
             .Produces<ApiResponseDto<TipoMovimientoEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -38,14 +35,14 @@ public class Configuracion : EndpointGroupBase
             Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("tipo-movimiento/list", GetListTipoMovimiento)
-            .WithName("CF_GetListTipoMovimiento")
+            .WithName("GetListTipoMovimiento")
             .WithSummary("Obtiene lista paginada de tipos de movimiento")
             .Produces<ApiResponseDto<PagedResultDto<TipoMovimientoListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPatch("tipo-movimiento/{id}/activo", ChangeActivoTipoMovimiento)
-            .WithName("CF_ChangeActivoTipoMovimiento")
+            .WithName("ChangeActivoTipoMovimiento")
             .WithSummary("Activa o desactiva un tipo de movimiento")
             .Produces(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -53,7 +50,7 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
         group.MapPost("tipo-movimiento/", CreateTipoMovimiento)
-            .WithName("CF_CreateTipoMovimiento")
+            .WithName("CreateTipoMovimiento")
             .WithSummary("Crea un nuevo tipo de movimiento")
             .Accepts<TipoMovimientoEditDto>("application/json")
             .Produces<ApiResponseDto<int>>(StatusCodes.Status201Created)
@@ -62,19 +59,19 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto<int>>(StatusCodes.Status500InternalServerError);
 
         group.MapPut("tipo-movimiento/{id}", UpdateTipoMovimiento)
-            .WithName("CF_UpdateTipoMovimiento")
+            .WithName("UpdateTipoMovimiento")
             .WithSummary("Actualiza un tipo de movimiento")
             .Accepts<TipoMovimientoEditDto>("application/json")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapDelete("tipo-movimiento/{id}", DeleteTipoMovimiento)
-            .WithName("CF_DeleteTipoMovimiento")
+            .WithName("DeleteTipoMovimiento")
             .WithSummary("Elimina un tipo de movimiento")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
@@ -82,13 +79,14 @@ public class Configuracion : EndpointGroupBase
 
         #region Producto
         group.MapGet("producto/", GetProductos)
+            .WithName("GetProductos")
             .WithSummary("Obtiene productos filtrados")
             .Produces<ApiResponseDto<PagedResultDto<ProductoListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("producto/{id}", GetProductoById)
-            .WithName("CF_GetProductoById")
+            .WithName("GetProductoById")
             .WithSummary("Obtiene un producto por ID para edición")
             .Produces<ApiResponseDto<ProductoEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -96,7 +94,7 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("producto/{id}/detail", GetProductoDetail)
-            .WithName("CF_GetProductoDetail")
+            .WithName("GetProductoDetail")
             .WithSummary("Obtiene el detalle de un producto por ID")
             .Produces<ApiResponseDto<ProductoDetailDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -104,7 +102,7 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPost("producto/", CreateProducto)
-            .WithName("CF_CreateProducto")
+            .WithName("CreateProducto")
             .WithSummary("Crea un nuevo producto")
             .Accepts<ProductoCreateDto>("application/json")
             .Produces<ApiResponseDto<int>>(StatusCodes.Status201Created)
@@ -113,10 +111,10 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto<int>>(StatusCodes.Status500InternalServerError);
 
         group.MapPut("producto/{id}", UpdateProducto)
-            .WithName("CF_UpdateProducto")
+            .WithName("UpdateProducto")
             .WithSummary("Actualiza un producto")
             .Accepts<ProductoEditDto>("application/json")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto<int>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
@@ -125,13 +123,14 @@ public class Configuracion : EndpointGroupBase
 
         #region CargoInicial
         group.MapGet("producto/{productoId}/cargo-inicial/", GetCargosIniciales)
+            .WithName("GetCargosIniciales")
             .WithSummary("Obtiene los cargos iniciales de un producto")
             .Produces<ApiResponseDto<List<CargoInicialListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("cargo-inicial/{id}", GetCargoInicialById)
-            .WithName("CF_GetCargoInicialById")
+            .WithName("GetCargoInicialById")
             .WithSummary("Obtiene un cargo inicial por ID para edición")
             .Produces<ApiResponseDto<CargoInicialEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -139,7 +138,7 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPost("cargo-inicial/", SaveCargoInicial)
-            .WithName("CF_SaveCargoInicial")
+            .WithName("SaveCargoInicial")
             .WithSummary("Crea o actualiza un cargo inicial")
             .Accepts<CargoInicialEditDto>("application/json")
             .Produces<ApiResponseDto<int>>(StatusCodes.Status200OK)
@@ -148,9 +147,9 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto<int>>(StatusCodes.Status500InternalServerError);
 
         group.MapDelete("cargo-inicial/{id}", DeleteCargo)
-            .WithName("CF_DeleteCargoInicial")
+            .WithName("DeleteCargoInicial")
             .WithSummary("Elimina un cargo inicial")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
@@ -158,13 +157,14 @@ public class Configuracion : EndpointGroupBase
 
         #region ConceptoFinanciado
         group.MapGet("producto/{productoId}/concepto-financiado/", GetConceptosFinanciados)
+            .WithName("GetConceptosFinanciados")
             .WithSummary("Obtiene los conceptos financiados de un producto")
             .Produces<ApiResponseDto<List<ConceptoFinanciadoListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("concepto-financiado/{id}", GetConceptoFinanciadoById)
-            .WithName("CF_GetConceptoFinanciadoById")
+            .WithName("GetConceptoFinanciadoById")
             .WithSummary("Obtiene un concepto financiado por ID para edición")
             .Produces<ApiResponseDto<ConceptoFinanciadoEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -172,7 +172,7 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPost("concepto-financiado/", SaveConceptoFinanciado)
-            .WithName("CF_SaveConceptoFinanciado")
+            .WithName("SaveConceptoFinanciado")
             .WithSummary("Crea o actualiza un concepto financiado")
             .Accepts<ConceptoFinanciadoEditDto>("application/json")
             .Produces<ApiResponseDto<int>>(StatusCodes.Status200OK)
@@ -181,74 +181,26 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto<int>>(StatusCodes.Status500InternalServerError);
 
         group.MapDelete("concepto-financiado/{id}", DeleteCargo)
-            .WithName("CF_DeleteConceptoFinanciado")
+            .WithName("DeleteConceptoFinanciado")
             .WithSummary("Elimina un concepto financiado")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
         #endregion
 
-        #region CalendarioLaboral
 
-        group.MapGet("calendario-laboral/", GetPaginatedCalendarioLaboral)
-            .WithName("GetPaginatedCalendarioLaboral")
-            .WithSummary("Obtiene el calendario laboral paginado y filtrado")
-            .WithDescription("Obtiene una lista paginada del calendario laboral con filtros por año y mes")
-            .Produces<ApiResponseDto<PagedResultDto<CalendarioLaboralListItemDto>>>(StatusCodes.Status200OK)
-            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
-            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
-
-        group.MapPut("calendario-laboral/{id}", UpdateCalendarioLaboral)
-            .WithName("UpdateCalendarioLaboral")
-            .WithSummary("Actualiza un día del calendario laboral")
-            .WithDescription("Actualiza si un día es hábil o no y su descripción")
-            .Accepts<CalendarioLaboralEditDto>("application/json")
-            .Produces(StatusCodes.Status200OK)
-            .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
-            .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
-            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
-
-        group.MapPost("calendario-laboral/generar", CreateCalendarioLaboral)
-            .WithName("CreateCalendarioLaboral")
-            .WithSummary("Genera el calendario laboral de un año")
-            .WithDescription("Ejecuta el proceso que genera los días del calendario laboral para el año indicado")
-            .Produces(StatusCodes.Status200OK)
-            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
-            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
-
-        group.MapGet("calendario-laboral/layout", GetLayoutCalendario)
-            .WithName("GetLayoutCalendario")
-            .WithSummary("Descarga el layout de días inhábiles")
-            .WithDescription("Genera y descarga un archivo Excel de ejemplo para importar días inhábiles")
-            .Produces(StatusCodes.Status200OK)
-            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
-            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
-
-        group.MapPost("calendario-laboral/importar-dias-inhabiles", ImportarDiasInhabiles)
-            .WithName("ImportarDiasInhabiles")
-            .WithSummary("Importa días inhábiles desde un archivo Excel")
-            .WithDescription("Sube un archivo Excel con los días inhábiles a marcar en el calendario laboral")
-            .Accepts<IFormFile>("multipart/form-data")
-            .Produces(StatusCodes.Status200OK)
-            .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
-            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError)
-            .DisableAntiforgery();
-
-        #endregion
 
         #region Perfil
         group.MapGet("perfil/", GetPerfiles)
-            .WithName("CF_GetPerfiles")
+            .WithName("GetPerfiles")
             .WithSummary("Obtiene perfiles filtrados y paginados")
             .Produces<ApiResponseDto<PagedResultDto<PerfilListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("perfil/{id}", GetPerfilById)
-            .WithName("CF_GetPerfilById")
+            .WithName("GetPerfilById")
             .WithSummary("Obtiene un perfil por ID para edición (usar 0 para nuevo)")
             .Produces<ApiResponseDto<PerfilEditDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -256,7 +208,7 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapPost("perfil/", SavePerfil)
-            .WithName("CF_SavePerfil")
+            .WithName("SavePerfil")
             .WithSummary("Crea o actualiza un perfil con sus secciones")
             .Accepts<PerfilEditDto>("application/json")
             .Produces<ApiResponseDto<int>>(StatusCodes.Status200OK)
@@ -265,9 +217,9 @@ public class Configuracion : EndpointGroupBase
             .Produces<ApiResponseDto<int>>(StatusCodes.Status500InternalServerError);
 
         group.MapDelete("perfil/{id}", DeletePerfil)
-            .WithName("CF_DeletePerfil")
+            .WithName("DeletePerfil")
             .WithSummary("Elimina un perfil por ID")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiResponseDto>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
@@ -275,7 +227,7 @@ public class Configuracion : EndpointGroupBase
 
         #region Seccion
         group.MapGet("seccion/", GetSecciones)
-            .WithName("CF_GetSecciones")
+            .WithName("GetSecciones")
             .WithSummary("Obtiene secciones filtradas y paginadas")
             .Produces<ApiResponseDto<PagedResultDto<SeccionListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
@@ -461,76 +413,7 @@ public class Configuracion : EndpointGroupBase
     }
     #endregion
 
-    #region CalendarioLaboral
-    private static async Task<IResult> GetPaginatedCalendarioLaboral(
-        [FromServices] IQueryMediator queryMediator,
-        [FromQuery] int? anio = null,
-        [FromQuery] int? mes = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int size = 10,
-        [FromQuery] string sortColumn = nameof(CalendarioLaboralListItemDto.Fecha),
-        [FromQuery] bool sortDescending = false)
-    {
-        var query = new GetCalendarioLaboralQuery
-        {
-            Anio = anio,
-            Mes = mes,
-            Page = page,
-            PageSize = size,
-            SortColumn = sortColumn,
-            SortDescending = sortDescending
-        };
 
-        var result = await queryMediator.QueryAsync(query);
-        return result.ToCustomMinimalApiResult();
-    }
-
-    private static async Task<IResult> UpdateCalendarioLaboral(
-        [FromServices] ICommandMediator commandMediator,
-        int id,
-        [FromBody] CalendarioLaboralEditDto model)
-    {
-        var command = new UpdateCalendarioLaboralCommand
-        {
-            Id = id,
-            Model = model
-        };
-
-        var result = await commandMediator.SendAsync(command);
-        return result.ToCustomMinimalApiResult();
-    }
-
-    private static async Task<IResult> CreateCalendarioLaboral(
-        [FromServices] ICommandMediator commandMediator,
-        [FromQuery] int? anio = null)
-    {
-        var result = await commandMediator.SendAsync(new CreateCalendarioLaboralCommand { Anio = anio });
-        return result.ToCustomMinimalApiResult();
-    }
-
-    private static async Task<IResult> GetLayoutCalendario(
-        [FromServices] IQueryMediator queryMediator)
-    {
-        var result = await queryMediator.QueryAsync(new GetLayoutCalendarioQuery());
-        if (!result.IsSuccess)
-            return result.ToCustomMinimalApiResult();
-
-        return Results.File(
-            result.Value,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            $"layout_calendario_laboral_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
-    }
-
-    private static async Task<IResult> ImportarDiasInhabiles(
-        [FromServices] ICommandMediator commandMediator,
-        IFormFile archivo)
-    {
-        using var stream = archivo.OpenReadStream();
-        var result = await commandMediator.SendAsync(new ImportarDiasInhabilesCommand { ArchivoStream = stream });
-        return result.ToCustomMinimalApiResult();
-    }
-
-    #endregion
 
     #region Perfil
     private static async Task<IResult> GetPerfiles(

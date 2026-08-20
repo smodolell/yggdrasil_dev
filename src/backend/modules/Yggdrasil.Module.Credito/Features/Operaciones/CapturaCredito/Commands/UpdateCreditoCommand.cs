@@ -1,8 +1,9 @@
-using Yggdrasil.Module.Credito.Features.Financial.DTOs;
+using DocumentFormat.OpenXml.Office2021.DocumentTasks;
 using Yggdrasil.Common.Attributes;
-using Yggdrasil.Module.Credito.Features.Financial.Services;
-using Yggdrasil.Module.Credito.Features.Financial.Factories;
 using Yggdrasil.Common.Constants;
+using Yggdrasil.Module.Credito.Features.Financial.DTOs;
+using Yggdrasil.Module.Credito.Features.Financial.Factories;
+using Yggdrasil.Module.Credito.Features.Financial.Services;
 using Yggdrasil.Module.Credito.Features.Operaciones.CapturaCredito.DTOs;
 
 namespace Yggdrasil.Module.Credito.Features.Operaciones.CapturaCredito.Commands;
@@ -86,16 +87,17 @@ internal class UpdateCreditoCommandHandler(
             oCredito.Tasa = model.Tasa;
             oCredito.PuntosMas = model.PuntosMas;
             oCredito.PuntosPor = model.PuntosPor;
-            oCredito.TasaBase = model.CalcularTasaBase();
+            oCredito.TasaBase = (model.Tasa + model.PuntosMas) * model.PuntosPor;
             oCredito.TasaMora = model.TasaMora;
             oCredito.PuntosMasMora = model.PuntosMasMora;
             oCredito.PuntosPorMora = model.PuntosPorMora;
-            oCredito.TasaBaseMora = model.CalcularTasaBaseMora();
+            oCredito.TasaBaseMora = (model.TasaMora + model.PuntosMasMora) * model.PuntosPorMora;
             oCredito.TasaIva = model.TasaIva ?? 0;
             oCredito.FechaAlta = model.FechaAlta ?? oCredito.FechaAlta;
             oCredito.FechaInicio = model.FechaInicio;
             oCredito.FechaPrimeraRenta = model.FechaPrimeraRenta;
             oCredito.VersionTabla += 1;
+
 
             _context.FI_TablaAmortiza.RemoveRange(oCredito.FI_TablaAmortiza);
 

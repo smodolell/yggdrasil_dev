@@ -1,7 +1,3 @@
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi
-
 <MudDialog>
     <DialogContent>
         <EditForm Model="_model" OnValidSubmit="HandleSubmit" style="width:100%;" id="tasaValorForm">
@@ -68,7 +64,7 @@
     {
         try
         {
-            var result = await _catalogosApi.GetTasaVariableById(TasaVariableId);
+            var result = await _catalogoApi.GetTasaVariableByIdAsync(TasaVariableId);
             if (result.Success && result.Data != null)
             {
                 var valor = result.Data.Valores.FirstOrDefault(v => v.Id == ValorId);
@@ -109,29 +105,15 @@
         {
             if (!_isEdit)
             {
-                var result = await _catalogosApi.CreateTasaValor(TasaVariableId, _model);
-                if (result.Success)
-                {
-                    _snackbarService.Add("Valor agregado correctamente", Severity.Success);
-                    MudDialog?.Close(DialogResult.Ok(true));
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors?.FirstOrDefault() ?? "Error al agregar", Severity.Error);
-                }
+                var result = await _catalogoApi.CreateTasaValorAsync(TasaVariableId, _model);
+                _snackbarService.Add("Valor agregado correctamente", Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
             }
             else
             {
-                var result = await _catalogosApi.UpdateTasaValor(TasaVariableId, ValorId, _model);
-                if (result.Success)
-                {
-                    _snackbarService.Add("Valor actualizado correctamente", Severity.Success);
-                    MudDialog?.Close(DialogResult.Ok(true));
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors?.FirstOrDefault() ?? "Error al actualizar", Severity.Error);
-                }
+                await _catalogoApi.UpdateTasaValorAsync(TasaVariableId, ValorId, _model);
+                _snackbarService.Add("Valor actualizado correctamente", Severity.Success);
+                MudDialog?.Close(DialogResult.Ok(true));
             }
         }
         catch (Exception ex)

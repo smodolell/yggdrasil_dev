@@ -1,0 +1,17 @@
+@attribute [Route(PageRoute.TipoCreditosPage)]
+@attribute [AccessPoint(AppMenu.MenuConfiguracion, "Tipos de Crédito")]
+@using Yggdrasil.Module.Credito.CS.UI.Pages.Configuracion.TipoCreditos.Components
+
+<PageHeader Title="Tipos de Crédito" Description="Catálogo de tipos de crédito simple" Icon="@AppMenu.MenuConfiguracionIcon">
+    <MudBreadcrumbs Items="_items" />
+</PageHeader>
+
+<TipoCreditoList />
+
+@code {
+    private List<BreadcrumbItem> _items =
+    [
+        new BreadcrumbItem("Configuración", href: null, disabled: true),
+        new BreadcrumbItem("Tipos de Crédito", href: null, icon: AppMenu.MenuConfiguracionIcon, disabled: true)
+    ];
+}

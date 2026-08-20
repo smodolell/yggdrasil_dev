@@ -17,7 +17,7 @@ public class Creditos : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Crédito - Créditos");
+            .WithTags("Credito - Creditos");
 
         group.MapGet("credito/", GetCreditos)
          .WithName("GetCreditos")
@@ -35,7 +35,7 @@ public class Creditos : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("credito/{id}/tabla-amortiza", GetTablaAmortiza)
-           .WithName("CF_GetTablaAmortiza")
+           .WithName("GetTablaAmortiza")
            .WithSummary("Obtiene la tabla de amortización de un crédito")
            .Produces<ApiResponseDto<List<TablaAmortizaItemDto>>>(StatusCodes.Status200OK)
            .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)
@@ -43,7 +43,7 @@ public class Creditos : EndpointGroupBase
            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("credito/{id}/movimientos", GetMovimientos)
-           .WithName("CF_GetMovimientos")
+           .WithName("GetMovimientos")
            .WithSummary("Obtiene los movimientos de un crédito")
            .Produces<ApiResponseDto<List<MovimientoItemDto>>>(StatusCodes.Status200OK)
            .Produces<ApiResponseDto>(StatusCodes.Status404NotFound)

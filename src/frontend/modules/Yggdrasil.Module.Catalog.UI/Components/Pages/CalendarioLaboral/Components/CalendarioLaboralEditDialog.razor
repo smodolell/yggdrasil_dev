@@ -1,0 +1,76 @@
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="SaveSubmit" id="calendarioLaboralForm">
+            <FluentValidator />
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1">@Fecha.ToString("dddd, dd 'de' MMMM 'de' yyyy")</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch @bind-Value="_model.EsHabil" Label="¿Es Día Hábil?" Color="Color.Primary" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Descripcion"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Label="Descripción"
+                                  Lines="2"
+                                  For="@(() => _model.Descripcion)" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Medium"
+                   ButtonType="ButtonType.Submit"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   form="calendarioLaboralForm">
+            Guardar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   Size="Size.Medium"
+                   OnClick="@(() => Close())"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public int Id { get; set; }
+    [Parameter] public DateTime Fecha { get; set; }
+    [Parameter] public bool EsHabil { get; set; }
+    [Parameter] public string Descripcion { get; set; } = "";
+
+    private CalendarioLaboralEditDto _model = new();
+
+    protected override void OnInitialized()
+    {
+        _model = new CalendarioLaboralEditDto
+        {
+            EsHabil = EsHabil,
+            Descripcion = Descripcion
+        };
+    }
+
+    private async Task SaveSubmit()
+    {
+        try
+        {
+            var result = await _catalogoApi.UpdateCalendarioLaboralAsync(Id, _model);
+            _snackbarService.Add(result.Message, Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            _snackbarService.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void Close() => MudDialog?.Close(DialogResult.Ok(false));
+}

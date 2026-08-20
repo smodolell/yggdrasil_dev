@@ -16,7 +16,7 @@ public class SelectLists : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Crédito - Select Lists");
+            .WithTags("Credito - SelectLists");
 
         //group.MapGet("bancos", GetBancoSelectList)
         //    .WithName("CF_GetBancoSelectList")
@@ -27,14 +27,14 @@ public class SelectLists : EndpointGroupBase
         //    .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
         //    .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
-        group.MapGet("monedas", GetMonedaSelectList)
-            .WithName("FI_GetMonedaSelectList")
-            .WithSummary("Obtiene Monedas")
-            .WithDescription("Retorna una lista de Monedas")
-            .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
-            .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
-            .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
+        //group.MapGet("monedas", GetMonedaSelectList)
+        //    .WithName("GetMonedaSelectList")
+        //    .WithSummary("Obtiene Monedas")
+        //    .WithDescription("Retorna una lista de Monedas")
+        //    .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
+        //    .Produces<ApiResponseDto>(StatusCodes.Status400BadRequest)
+        //    .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
+        //    .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         //group.MapGet("tipos-cuenta-bancaria", GetTipoCuentaBancariaSelectList)
         //    .WithName("CF_GetTipoCuentaBancariaSelectList")
@@ -46,7 +46,7 @@ public class SelectLists : EndpointGroupBase
         //    .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("tipos-domicilio", GetTipoDomicilioSelectList)
-            .WithName("CF_GetTipoDomicilioSelectList")
+            .WithName("GetTipoDomicilioSelectList")
             .WithSummary("Obtiene Tipos de Domicilio")
             .WithDescription("Retorna una lista de Tipos de Domicilio")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
@@ -55,7 +55,7 @@ public class SelectLists : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("tipos-persona", GetTipoPersonaSelectList)
-            .WithName("FI_GetTipoPersonaSelectList")
+            .WithName("GetTipoPersonaSelectList")
             .WithSummary("Obtiene Tipos de Persona")
             .WithDescription("Retorna una lista de Tipos de Persona")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
@@ -64,7 +64,7 @@ public class SelectLists : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("estados-civiles", GetEdoCivilSelectList)
-            .WithName("FI_GetEdoCivilSelectList")
+            .WithName("GetEdoCivilSelectList")
             .WithSummary("Obtiene Estados Civiles")
             .WithDescription("Retorna una lista de Estados Civiles")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
@@ -73,7 +73,7 @@ public class SelectLists : EndpointGroupBase
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("generos", GetGeneroSelectList)
-            .WithName("CF_GetGeneroSelectList")
+            .WithName("GetGeneroSelectList")
             .WithSummary("Obtiene Géneros")
             .WithDescription("Retorna una lista de Géneros")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
@@ -100,21 +100,21 @@ public class SelectLists : EndpointGroupBase
         //    .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("empresas", GetEmpresaSelectList)
-            .WithName("CF_GetEmpresaSelectList")
+            .WithName("GetEmpresaSelectList")
             .WithSummary("Obtiene Empresas")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("tipos-movimiento", GetTipoMovimientoSelectList)
-            .WithName("CF_GetTipoMovimientoSelectList")
+            .WithName("GetTipoMovimientoSelectList")
             .WithSummary("Obtiene Tipos de Movimiento activos")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("tipos-pago", GetTipoPagoSelectList)
-            .WithName("CF_GetTipoPagoSelectList")
+            .WithName("GetTipoPagoSelectList")
             .WithSummary("Obtiene Tipos de Pago")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
@@ -122,14 +122,14 @@ public class SelectLists : EndpointGroupBase
 
 
         group.MapGet("formas-pago", GetFormaPagoSelectList)
-            .WithName("CF_GetFormaPagoSelectList")
+            .WithName("GetFormaPagoSelectList")
             .WithSummary("Obtiene Formas de Pago")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponseDto>(StatusCodes.Status500InternalServerError);
 
         group.MapGet("tipos-calculo", GetTipoCalculoSelectList)
-            .WithName("CF_GetTipoCalculoSelectList")
+            .WithName("GetTipoCalculoSelectList")
             .WithSummary("Obtiene Tipos de Calculo")
             .Produces<ApiResponseDto<List<SelectListItemDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseDto>(StatusCodes.Status401Unauthorized)

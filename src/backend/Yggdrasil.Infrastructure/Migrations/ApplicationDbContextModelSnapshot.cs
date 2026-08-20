@@ -17,7 +17,7 @@ namespace Yggdrasil.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -644,6 +644,599 @@ namespace Yggdrasil.Infrastructure.Migrations
                         .HasDatabaseName("IX_CAT_TiposTelefono_NomTipoTelefono");
 
                     b.ToTable("CAT_TiposTelefono", (string)null);
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Credito", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Capital")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<string>("ClaveCredito")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("EstatusCreditoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("FechaActivacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaFirmaContrato")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaPrimeraRenta")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MetodoArmotizacionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PeriodicidadId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Plazo")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Tasa")
+                        .HasColumnType("decimal(8, 6)");
+
+                    b.Property<decimal>("TasaIva")
+                        .HasColumnType("decimal(8, 6)");
+
+                    b.Property<int>("TipoCreditoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VersionTabla")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstatusCreditoId");
+
+                    b.HasIndex("MetodoArmotizacionId");
+
+                    b.HasIndex("PeriodicidadId");
+
+                    b.HasIndex("TipoCreditoId");
+
+                    b.ToTable("CS_Credito");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_EstatusCredito", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NomEstatusCredito")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CS_EstatusCredito", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 2,
+                            Activo = true,
+                            NomEstatusCredito = "ACTIVO"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            Activo = true,
+                            NomEstatusCredito = "CAPTURADO"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Activo = true,
+                            NomEstatusCredito = "TERMINADO"
+                        });
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_MetodoArmotizacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NomMetodoArmotizacion")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CS_MetodoArmotizacion");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Movimiento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Capital")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<int>("CreditoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DescMovimiento")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Interes")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("Iva")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("NoPago")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("SaldoCapital")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("SaldoInteres")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("SaldoIva")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("SaldoTotal")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<int>("TipoMovimientoId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreditoId");
+
+                    b.HasIndex("TipoMovimientoId");
+
+                    b.ToTable("CS_Movimiento");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Pago", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Cancelado")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("FechaModificacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaPago")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("SaldoFavor")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<bool>("Suspenso")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TipoPagoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TipoPagoId");
+
+                    b.ToTable("CS_Pago");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_PagoMovimiento", b =>
+                {
+                    b.Property<int>("PagoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MovimientoId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Cancelado")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("CapitalPagado")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<DateTime>("FechaPago")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("InteresPagado")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("IvaPagado")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<string>("MotivoCancelacion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<decimal>("TotalPagado")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.HasKey("PagoId", "MovimientoId");
+
+                    b.HasIndex("MovimientoId");
+
+                    b.ToTable("CS_PagoMovimiento", (string)null);
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_TablaAmortiza", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Capital")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<int>("CreditoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Dias")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaFinal")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicial")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Interes")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("Iva")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<int>("NoPago")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Procesado")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("SaldoFinal")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("SaldoInicial")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("TasaCalculo")
+                        .HasColumnType("decimal(8, 4)");
+
+                    b.Property<int>("TipoMovimientoId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<int>("VersionTabla")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreditoId");
+
+                    b.HasIndex("TipoMovimientoId");
+
+                    b.ToTable("CS_TablaAmortiza");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_TipoCredito", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ClaveTipoCredito")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("Consecutivo")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<string>("NomTipoCredito")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Postfijo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Prefijo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("TipoMovimientoRentaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TipoMovimientoRentaId");
+
+                    b.ToTable("CS_TipoCredito");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_TipoMovimiento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Clave")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<string>("NomTipoMovimiento")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CS_TipoMovimiento");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_TipoPago", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("NomTipoPago")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CS_TipoPago");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.DEV_CreditoIntraDia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Capital")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaPrimeraRenta")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("MontoOtorgado")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Tasa")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("TasaIva")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DEV_CreditoIntraDia");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.DEV_InteresAcumulado", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CreditoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Dias")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaCalculo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Interes")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Iva")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SaldoCapital")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Tasa")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("TasaIva")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreditoId")
+                        .IsUnique();
+
+                    b.ToTable("DEV_InteresAcumulado");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.DEV_MovimientoIntraDia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Capital")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Concepto")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("CreditoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Interes")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Iva")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Nro")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("SaldoInsolutoResultante")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreditoId");
+
+                    b.ToTable("DEV_MovimientoIntraDia");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.DEV_TablaAmortiza", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Capital")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<Guid>("CreditoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Dias")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaFinal")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicial")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Interes")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("Iva")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<int>("NoPago")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Procesado")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("SaldoFinal")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("SaldoInicial")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("TasaCalculo")
+                        .HasColumnType("decimal(8, 4)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<int>("VersionTabla")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreditoId");
+
+                    b.ToTable("DEV_TablaAmortiza");
                 });
 
             modelBuilder.Entity("Yggdrasil.Domain.Entities.FI_Cargo", b =>
@@ -1706,6 +2299,601 @@ namespace Yggdrasil.Infrastructure.Migrations
                     b.ToTable("CAT_TipoPago", (string)null);
                 });
 
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Fase", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClaveFase")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<bool>("EsFinal")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsInicial")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("InClient")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MapRoute")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("NomFase")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Orden")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("Required")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OT_Fase");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_FaseEstado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Completado")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Condicionado")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Edicion")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Espera")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("FaseId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Inicial")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NomEstado")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<bool>("Rechazado")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FaseId");
+
+                    b.ToTable("OT_FaseEstado");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Persona", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("CUIT")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Calle")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("DNI")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("DNIConyuge")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<short>("DependientesEconomicos")
+                        .HasColumnType("smallint");
+
+                    b.Property<int?>("EdoCivilId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("EmailConyuge")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("EsAval")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsBeneficiario")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsObligadoSolidario")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsRepresentateLegal")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsSolicitante")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("FechaConstitucion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaNacimiento")
+                        .HasColumnType("Date");
+
+                    b.Property<int?>("GeneroId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NombreCompletoConyuge")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Numero")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RazonSocial")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("SolicitudId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("SostenFamiliar")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TelefonoCasa")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TelefonoCelular")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TelefonoConyuge")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TelefonoDomicilio")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<short>("TiempoResidenciaCiudad")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("TiempoResidenciaDomicilio")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("TipoPersonaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EdoCivilId");
+
+                    b.HasIndex("GeneroId");
+
+                    b.HasIndex("SolicitudId");
+
+                    b.HasIndex("TipoPersonaId");
+
+                    b.ToTable("OT_Persona");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Plan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DescPlan")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("EdadMaxima")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EdadMinima")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("GraciaCapital")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("GraciaInteres")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("ImporteMaximo")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("ImporteMinimo")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<string>("NomPlan")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TasaIvaConRFC")
+                        .HasColumnType("decimal(8, 4)");
+
+                    b.Property<decimal>("TasaIvaSinRFC")
+                        .HasColumnType("decimal(8, 4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("OT_Plan");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_PlanFase", b =>
+                {
+                    b.Property<int>("PlanId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FaseId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Orden")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("PlanId", "FaseId");
+
+                    b.HasIndex("FaseId");
+
+                    b.ToTable("OT_PlanFase");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_PlanPeriodicidad", b =>
+                {
+                    b.Property<int>("PlanId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PeriodicidadId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PlanId", "PeriodicidadId");
+
+                    b.HasIndex("PeriodicidadId");
+
+                    b.ToTable("OT_PlanPeriodicidad");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_PlanPlazo", b =>
+                {
+                    b.Property<int>("PlanId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ValorPlazo")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PlazoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TasaId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ValorTasa")
+                        .HasColumnType("decimal(8, 4)");
+
+                    b.HasKey("PlanId", "ValorPlazo");
+
+                    b.HasIndex("PlazoId");
+
+                    b.HasIndex("TasaId");
+
+                    b.ToTable("OT_PlanPlazo");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Solicitud", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("AnalistaId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AsesorId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BancoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CBU")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("DestinoCredito")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("FaseEstadoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("ImporteMaximo")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("ImporteMinimo")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<decimal>("MontoSolicitado")
+                        .HasColumnType("decimal(13, 2)");
+
+                    b.Property<int?>("PlanId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SucursalId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TipoPersonaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnalistaId");
+
+                    b.HasIndex("AsesorId");
+
+                    b.HasIndex("BancoId");
+
+                    b.HasIndex("FaseEstadoId");
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.HasIndex("TipoPersonaId");
+
+                    b.ToTable("OT_Solicitud");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_SolicitudFase", b =>
+                {
+                    b.Property<int>("FaseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SolicitudId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FaseEstadoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("OK")
+                        .HasColumnType("bit");
+
+                    b.HasKey("FaseId", "SolicitudId");
+
+                    b.HasIndex("FaseEstadoId");
+
+                    b.HasIndex("SolicitudId");
+
+                    b.ToTable("OT_SolicitudFase");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.RSP_Archivo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LogParameters")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MapPath")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("NombreArchivo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NombreUnico")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ReporteId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReporteId");
+
+                    b.ToTable("RSP_Archivo");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.RSP_Input", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NomInput")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RSP_Input");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            NomInput = "TextBox"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            NomInput = "CheckBox"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            NomInput = "TextBoxDatepicker"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            NomInput = "DropDownList"
+                        });
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.RSP_Parametro", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ColumnaTexto")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("ColumnaValor")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("Display")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<int>("InputId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NomParametro")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReporteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TablaRef")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("TipoDato")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InputId");
+
+                    b.HasIndex("ReporteId");
+
+                    b.ToTable("RSP_Parametro");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.RSP_Reporte", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NomReporte")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<int?>("ReporteFormatoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StoredProcedure")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RSP_Reporte");
+                });
+
             modelBuilder.Entity("Yggdrasil.Domain.Entities.SYS_AccessPoint", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2235,6 +3423,153 @@ namespace Yggdrasil.Infrastructure.Migrations
                     b.Navigation("CAT_Tasa");
                 });
 
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Credito", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_EstatusCredito", "CS_EstatusCredito")
+                        .WithMany()
+                        .HasForeignKey("EstatusCreditoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_MetodoArmotizacion", "CS_MetodoArmotizacion")
+                        .WithMany()
+                        .HasForeignKey("MetodoArmotizacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_Periodicidad", "CAT_Periodicidad")
+                        .WithMany()
+                        .HasForeignKey("PeriodicidadId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_TipoCredito", "CS_TipoCredito")
+                        .WithMany()
+                        .HasForeignKey("TipoCreditoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CAT_Periodicidad");
+
+                    b.Navigation("CS_EstatusCredito");
+
+                    b.Navigation("CS_MetodoArmotizacion");
+
+                    b.Navigation("CS_TipoCredito");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Movimiento", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_Credito", "CS_Credito")
+                        .WithMany()
+                        .HasForeignKey("CreditoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_TipoMovimiento", "CS_TipoMovimiento")
+                        .WithMany()
+                        .HasForeignKey("TipoMovimientoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CS_Credito");
+
+                    b.Navigation("CS_TipoMovimiento");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Pago", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_TipoPago", "CS_TipoPago")
+                        .WithMany()
+                        .HasForeignKey("TipoPagoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CS_TipoPago");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_PagoMovimiento", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_Movimiento", "CS_Movimiento")
+                        .WithMany("CS_PagoMovimiento")
+                        .HasForeignKey("MovimientoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_Pago", "CS_Pago")
+                        .WithMany("CS_PagoMovimiento")
+                        .HasForeignKey("PagoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CS_Movimiento");
+
+                    b.Navigation("CS_Pago");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_TablaAmortiza", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_Credito", "CS_Credito")
+                        .WithMany("CS_TablaAmortiza")
+                        .HasForeignKey("CreditoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_TipoMovimiento", "CS_TipoMovimiento")
+                        .WithMany()
+                        .HasForeignKey("TipoMovimientoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CS_Credito");
+
+                    b.Navigation("CS_TipoMovimiento");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_TipoCredito", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.CS_TipoMovimiento", "CS_TipoMovimiento")
+                        .WithMany()
+                        .HasForeignKey("TipoMovimientoRentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CS_TipoMovimiento");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.DEV_InteresAcumulado", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.DEV_CreditoIntraDia", "DEV_CreditoIntraDia")
+                        .WithOne("DEV_InteresAcumulado")
+                        .HasForeignKey("Yggdrasil.Domain.Entities.DEV_InteresAcumulado", "CreditoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DEV_CreditoIntraDia");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.DEV_MovimientoIntraDia", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.DEV_CreditoIntraDia", "DEV_CreditoIntraDia")
+                        .WithMany("DEV_Movimientos")
+                        .HasForeignKey("CreditoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DEV_CreditoIntraDia");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.DEV_TablaAmortiza", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.DEV_CreditoIntraDia", "DEV_CreditoIntraDia")
+                        .WithMany("DEV_TablaAmortiza")
+                        .HasForeignKey("CreditoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DEV_CreditoIntraDia");
+                });
+
             modelBuilder.Entity("Yggdrasil.Domain.Entities.FI_Cargo", b =>
                 {
                     b.HasOne("Yggdrasil.Domain.Entities.FI_FormaPago", "FI_FormaPago")
@@ -2603,6 +3938,228 @@ namespace Yggdrasil.Infrastructure.Migrations
                     b.Navigation("FI_Persona");
                 });
 
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_FaseEstado", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Fase", "OT_Fase")
+                        .WithMany("OT_FaseEstado")
+                        .HasForeignKey("FaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OT_Fase");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Persona", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_EdoCivil", "CAT_EdoCivil")
+                        .WithMany()
+                        .HasForeignKey("EdoCivilId");
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_Genero", "CAT_Genero")
+                        .WithMany()
+                        .HasForeignKey("GeneroId");
+
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Solicitud", "OT_Solicitud")
+                        .WithMany("OT_Persona")
+                        .HasForeignKey("SolicitudId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_TipoPersona", "CAT_TipoPersona")
+                        .WithMany()
+                        .HasForeignKey("TipoPersonaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CAT_EdoCivil");
+
+                    b.Navigation("CAT_Genero");
+
+                    b.Navigation("CAT_TipoPersona");
+
+                    b.Navigation("OT_Solicitud");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Plan", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.FI_Producto", "FI_Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FI_Producto");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_PlanFase", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Fase", "OT_Fase")
+                        .WithMany("OT_PlanFase")
+                        .HasForeignKey("FaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Plan", "OT_Plan")
+                        .WithMany("OT_PlanFase")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OT_Fase");
+
+                    b.Navigation("OT_Plan");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_PlanPeriodicidad", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_Periodicidad", "CAT_Periodicidad")
+                        .WithMany()
+                        .HasForeignKey("PeriodicidadId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Plan", "OT_Plan")
+                        .WithMany("OT_PlanPeriodicidad")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CAT_Periodicidad");
+
+                    b.Navigation("OT_Plan");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_PlanPlazo", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Plan", "OT_Plan")
+                        .WithMany("OT_PlanPlazo")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_Plazo", "CAT_Plazo")
+                        .WithMany()
+                        .HasForeignKey("PlazoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_Tasa", "CAT_Tasa")
+                        .WithMany()
+                        .HasForeignKey("TasaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CAT_Plazo");
+
+                    b.Navigation("CAT_Tasa");
+
+                    b.Navigation("OT_Plan");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Solicitud", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.SYS_Usuario", "SYS_Usuario_Analista")
+                        .WithMany()
+                        .HasForeignKey("AnalistaId");
+
+                    b.HasOne("Yggdrasil.Domain.Entities.SYS_Usuario", "SYS_Usuario_Asesor")
+                        .WithMany()
+                        .HasForeignKey("AsesorId");
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_Banco", "CAT_Banco")
+                        .WithMany()
+                        .HasForeignKey("BancoId");
+
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_FaseEstado", "OT_FaseEstado")
+                        .WithMany()
+                        .HasForeignKey("FaseEstadoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Plan", "OT_Plan")
+                        .WithMany()
+                        .HasForeignKey("PlanId");
+
+                    b.HasOne("Yggdrasil.Domain.Entities.FI_Producto", "FI_Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId");
+
+                    b.HasOne("Yggdrasil.Domain.Entities.CAT_TipoPersona", "CAT_TipoPersona")
+                        .WithMany()
+                        .HasForeignKey("TipoPersonaId");
+
+                    b.Navigation("CAT_Banco");
+
+                    b.Navigation("CAT_TipoPersona");
+
+                    b.Navigation("FI_Producto");
+
+                    b.Navigation("OT_FaseEstado");
+
+                    b.Navigation("OT_Plan");
+
+                    b.Navigation("SYS_Usuario_Analista");
+
+                    b.Navigation("SYS_Usuario_Asesor");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_SolicitudFase", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_FaseEstado", "OT_FaseEstado")
+                        .WithMany()
+                        .HasForeignKey("FaseEstadoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Fase", "OT_Fase")
+                        .WithMany("OT_SolicitudFase")
+                        .HasForeignKey("FaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.OT_Solicitud", "OT_Solicitud")
+                        .WithMany("OT_SolicitudFase")
+                        .HasForeignKey("SolicitudId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OT_Fase");
+
+                    b.Navigation("OT_FaseEstado");
+
+                    b.Navigation("OT_Solicitud");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.RSP_Archivo", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.RSP_Reporte", "RSP_Reporte")
+                        .WithMany()
+                        .HasForeignKey("ReporteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RSP_Reporte");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.RSP_Parametro", b =>
+                {
+                    b.HasOne("Yggdrasil.Domain.Entities.RSP_Input", "RSP_Input")
+                        .WithMany()
+                        .HasForeignKey("InputId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Yggdrasil.Domain.Entities.RSP_Reporte", "RSP_Reporte")
+                        .WithMany("RSP_Parametro")
+                        .HasForeignKey("ReporteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RSP_Input");
+
+                    b.Navigation("RSP_Reporte");
+                });
+
             modelBuilder.Entity("Yggdrasil.Domain.Entities.SYS_AccessPoint", b =>
                 {
                     b.HasOne("Yggdrasil.Domain.Entities.SYS_AccessPointType", "SYS_AccessPointType")
@@ -2676,6 +4233,30 @@ namespace Yggdrasil.Infrastructure.Migrations
                     b.Navigation("CAT_TasaValor");
                 });
 
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Credito", b =>
+                {
+                    b.Navigation("CS_TablaAmortiza");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Movimiento", b =>
+                {
+                    b.Navigation("CS_PagoMovimiento");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.CS_Pago", b =>
+                {
+                    b.Navigation("CS_PagoMovimiento");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.DEV_CreditoIntraDia", b =>
+                {
+                    b.Navigation("DEV_InteresAcumulado");
+
+                    b.Navigation("DEV_Movimientos");
+
+                    b.Navigation("DEV_TablaAmortiza");
+                });
+
             modelBuilder.Entity("Yggdrasil.Domain.Entities.FI_Credito", b =>
                 {
                     b.Navigation("FI_Movimiento");
@@ -2719,6 +4300,36 @@ namespace Yggdrasil.Infrastructure.Migrations
             modelBuilder.Entity("Yggdrasil.Domain.Entities.FI_Seccion", b =>
                 {
                     b.Navigation("FI_PerfilSeccion");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Fase", b =>
+                {
+                    b.Navigation("OT_FaseEstado");
+
+                    b.Navigation("OT_PlanFase");
+
+                    b.Navigation("OT_SolicitudFase");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Plan", b =>
+                {
+                    b.Navigation("OT_PlanFase");
+
+                    b.Navigation("OT_PlanPeriodicidad");
+
+                    b.Navigation("OT_PlanPlazo");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.OT_Solicitud", b =>
+                {
+                    b.Navigation("OT_Persona");
+
+                    b.Navigation("OT_SolicitudFase");
+                });
+
+            modelBuilder.Entity("Yggdrasil.Domain.Entities.RSP_Reporte", b =>
+                {
+                    b.Navigation("RSP_Parametro");
                 });
 
             modelBuilder.Entity("Yggdrasil.Domain.Entities.SYS_AccessPoint", b =>

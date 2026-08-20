@@ -9,12 +9,6 @@ public partial class NavItemMenu
 
     [Parameter] public EventCallback<AccessPointDto> NavTo { get; set; }
 
-    private bool _shouldRender = false;
-
-
-
-    protected override bool ShouldRender() => _shouldRender;
-
     private async Task NavClick(AccessPointDto item)
     {
         await NavTo.InvokeAsync(item);

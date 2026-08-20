@@ -22,6 +22,11 @@ public enum AuditEvents
     [Description("Editar Credito")]
     EditarCredito = 5,
     [Description("Activar Credito")]
-    ActivarCredito = 6
+    ActivarCredito = 6,
+
+    [Description("Registrar Pago")]
+    RegistrarPago = 7,
+    [Description("Cancelar Pago")]
+    CancelarPago = 8
 
 }

@@ -61,6 +61,38 @@ public interface IApplicationDbContext
     DbSet<SYS_Rol> Roles { get; }
     DbSet<CAT_CalendarioLaboral> CAT_CalendarioLaboral { get; }
 
+
+    DbSet<RSP_Archivo> RSP_Archivo { get; }
+    DbSet<RSP_Input> RSP_Input { get; }
+    DbSet<RSP_Parametro> RSP_Parametro { get; }
+    DbSet<RSP_Reporte> RSP_Reporte { get; }
+    DbSet<DEV_CreditoIntraDia> DEV_CreditoIntraDia { get; }
+    DbSet<DEV_InteresAcumulado> DEV_InteresAcumulado { get; }
+    DbSet<DEV_MovimientoIntraDia> DEV_MovimientoIntraDia { get; }
+    DbSet<DEV_TablaAmortiza> DEV_TablaAmortiza { get; }
+
+
+
+
+    #region OT
+    DbSet<OT_Plan> OT_Plan { get; }
+    DbSet<OT_PlanPeriodicidad> OT_PlanPeriodicidad { get; }
+
+    #endregion
+
+    #region CS_
+    DbSet<CS_Credito> CS_Credito { get; }
+    DbSet<CS_EstatusCredito> CS_EstatusCredito { get; }
+    DbSet<CS_MetodoArmotizacion> CS_MetodoArmotizacion { get; }
+    DbSet<CS_Movimiento> CS_Movimiento { get; }
+    DbSet<CS_Pago> CS_Pago { get; }
+    DbSet<CS_PagoMovimiento> CS_PagoMovimiento { get; }
+    DbSet<CS_TablaAmortiza> CS_TablaAmortiza { get; }
+    DbSet<CS_TipoCredito> CS_TipoCredito { get; }
+    DbSet<CS_TipoMovimiento> CS_TipoMovimiento { get; }
+    DbSet<CS_TipoPago> CS_TipoPago { get; }
+
+    #endregion
     IApplicationDbContextProcedures Procedures { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

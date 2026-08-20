@@ -1,8 +1,4 @@
-﻿@using Yggdrasil.Module.Catalog.UI.Services.Catalogos
-@using Yggdrasil.Module.Catalog.UI.Services.Catalogos.DTOs
-@inject ICatalogosApi _catalogosApi;
-
-<MudGrid>
+﻿<MudGrid>
     <MudItem xs="12" sm="12" md="12">
         @if (_list == null)
         {
@@ -78,10 +74,10 @@
     private int _pageSize = 10;
     private int _totalCount = 0;
     private bool _loading;
-    private decimal? _valMin;
-    private decimal? _valMax;
+    private double? _valMin;
+    private double? _valMax;
     private string? _searchText;
-    private PagedResultDto<TasaListItemDto>? _list;
+    private TasaListItemDtoPagedResultDto? _list;
     private DialogOptions _optionsDialogs = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
     protected override async Task OnInitializedAsync()
@@ -95,14 +91,14 @@
     private async Task InitialData()
     {
         _loading = true;
-        var result = await _catalogosApi.GetTasas(
-            _valMin,
-            _valMax,
-            _searchText,
-            _pageNumber,
-            _pageSize,
-            nameof(TasaListItemDto.NomTasa),
-            false
+        var result = await _catalogoApi.TasaAsync(
+            q: _searchText ?? "",
+            valueMin: _valMin,
+            valueMax: _valMax,
+            page: _pageNumber,
+            size: _pageSize,
+            sortColumn: nameof(TasaListItemDto.NomTasa),
+            sortDescending: false
         );
         _list = result.Data;
         _loading = false;
@@ -141,16 +137,9 @@
         {
             try
             {
-                var result = await _catalogosApi.DeleteTasa(item.Id);
-                if (result.Success)
-                {
-                    _snackbarService.Add(result.Message, Severity.Success);
-                    await InitialData();
-                }
-                else
-                {
-                    _snackbarService.Add(result.Errors?.FirstOrDefault() ?? "Error al eliminar", Severity.Error);
-                }
+                await _catalogoApi.DeleteTasaAsync(item.Id);
+                _snackbarService.Add("Tasa eliminada correctamente", Severity.Success);
+                await InitialData();
             }
             catch (Exception ex)
             {
@@ -161,13 +150,13 @@
 
     private async Task ChangeActivo(int id, bool active)
     {
-        var result = await _catalogosApi.ChangeActiveTasa(id, new ChangeActiveTasaDto
+        try
         {
-            Active = active
-        });
-        if (result.Success)
-        {
-            _snackbarService.Add(result.Message, Severity.Success);
+            await _catalogoApi.ChangeActiveTasaAsync(id, new ChangeActiveTasaDto
+            {
+                Active = active
+            });
+            _snackbarService.Add("Estado actualizado correctamente", Severity.Success);
             if (_list != null)
             {
                 var item = _list.Results.FirstOrDefault(u => u.Id == id);
@@ -177,9 +166,9 @@
                 }
             }
         }
-        else
+        catch (Exception ex)
         {
-            _snackbarService.Add(result.Errors?.FirstOrDefault() ?? "Error", Severity.Error);
+            _snackbarService.Add(ex.Message, Severity.Error);
         }
         StateHasChanged();
     }

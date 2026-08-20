@@ -34,4 +34,7 @@ internal static class PageRoute
 
     public const string CalendarioLaboralPage = Prefix + "calendario_laboral";
 
+    public const string IntradiasPage = Prefix + "intradias";
+    public const string IntradiaDetail = Prefix + "intradia_detail";
+
 }

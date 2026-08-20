@@ -1,4 +1,5 @@
-﻿<MudThemeProvider IsDarkMode="@_themeState.IsDark" Theme="@_themeState.MudTheme" />
+﻿@implements IDisposable
+<MudThemeProvider IsDarkMode="@_themeState.IsDark" Theme="@_themeState.MudTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -6,7 +7,15 @@
 @code {
     protected override void OnInitialized()
     {
-        _themeState.IsDarkChangeEvent += StateHasChanged;
-        _themeState.ThemeChangeEvent += StateHasChanged;
+        _themeState.IsDarkChangeEvent += OnThemeChanged;
+        _themeState.ThemeChangeEvent += OnThemeChanged;
+    }
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        _themeState.IsDarkChangeEvent -= OnThemeChanged;
+        _themeState.ThemeChangeEvent -= OnThemeChanged;
     }
 }

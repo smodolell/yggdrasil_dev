@@ -1,18 +1,18 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Reflection;
+using Yggdrasil.ApiClient;
+using Yggdrasil.ApiClient.Contracts;
 using Yggdrasil.Module.Credito.UI.Helpers;
-using Yggdrasil.Module.Credito.UI.Services.Clientes;
-using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs;
 
 
 namespace Yggdrasil.Module.Credito.UI.Services.Sync;
 
 public class SeccionPersonaSyncService : ISeccionPersonaSyncService
 {
-    private readonly IClientesApi _clientesApi;
+    private readonly ICreditoClientesApi _clientesApi;
     private readonly ILogger<SeccionPersonaSyncService> _logger;
 
-    public SeccionPersonaSyncService(IClientesApi clientesApi, ILogger<SeccionPersonaSyncService> logger)
+    public SeccionPersonaSyncService(ICreditoClientesApi clientesApi, ILogger<SeccionPersonaSyncService> logger)
     {
         _clientesApi = clientesApi;
         _logger = logger;
@@ -76,7 +76,7 @@ public class SeccionPersonaSyncService : ISeccionPersonaSyncService
                 IsExtension = s.IsExtension
             }).ToList();
 
-            var result = await _clientesApi.SyncSeccionPersona(seccionesDto);
+            var result = await _clientesApi.SyncSeccionPersonaAsync(seccionesDto);
 
             if (result.Success)
             {

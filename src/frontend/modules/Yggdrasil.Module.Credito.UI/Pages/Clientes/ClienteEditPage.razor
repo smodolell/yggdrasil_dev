@@ -1,9 +1,6 @@
 ﻿@attribute [Route(PageRoute.ClienteEdit + "/{PersonaId:int}")]
-@attribute [AccessPoint(AppMenu.MenuOperacion, "Editar Cliente",AccessPointType.Page)]
-@using Yggdrasil.Module.Credito.UI.Services.Clientes
-@using Yggdrasil.Module.Credito.UI.Services.Clientes.DTOs
+@attribute [AccessPoint(AppMenu.MenuOperacion, "Editar Cliente", Yggdrasil.Blazor.DTOs.AccessPointType.Page)]
 @using Yggdrasil.Module.Credito.UI.Helpers
-@inject IClientesApi _clienteService
 <PageHeader Title="Editar Cliente" Icon="@AppMenu.MenuOperacionIcon">
     <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
 </PageHeader>
@@ -98,13 +95,13 @@
         {
             if (_perfil == null)
             {
-                var result = await _clienteService.GetPerfilByPersonaIdAsync(PersonaId);
+                var result = await _clientesApi.GetPerfilByPersonaIdAsync(PersonaId);
                 _perfil = result.Data!;
             }
-            var resultSecciones = await _clienteService.GetSeccionesByPerfilIdAsync(_perfil.PerfilId);
+            var resultSecciones = await _clientesApi.GetSeccionesByPerfilIdAsync(_perfil.PerfilId);
             if (_componentes == null)
             {
-                
+
                 var secciones = resultSecciones.Data!.Where(r => r.IsEdit).Select(s => s.SeccionId).ToList();
                 _componentes = SeccionPersonaHelper.GetListSeccionByAssembly(this.GetType().Assembly, secciones);
             }
@@ -163,3 +160,4 @@
 
     }
 }
+

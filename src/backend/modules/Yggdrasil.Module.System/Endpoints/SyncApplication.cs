@@ -16,19 +16,19 @@ public class SyncApplication : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Sistema - Sistema");
+            .WithTags("Sistema");
 
         group.MapPost("module", SyncModule)
           .WithName("SyncModule")
           .WithSummary("Sincroniza los módulos y puntos de acceso detectados por reflexión en el cliente")
           .Accepts<List<ModuleDto>>("application/json")
-          .Produces<Result>(StatusCodes.Status200OK)
+          .Produces<ApiResponseDto>(StatusCodes.Status200OK)
           .Produces<ApiResponseDto<object>>(StatusCodes.Status400BadRequest)
           .Produces<ApiResponseDto<object>>(StatusCodes.Status401Unauthorized)
           .Produces<ApiResponseDto<object>>(StatusCodes.Status500InternalServerError);
     }
 
-    public async Task<IResult> SyncModule(
+    public static async Task<IResult> SyncModule(
         [FromServices] ICommandMediator commandMediator,
         [FromBody] List<ModuleDto> model)
     {

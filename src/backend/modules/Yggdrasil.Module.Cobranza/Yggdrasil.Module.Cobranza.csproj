@@ -9,6 +9,7 @@
   <ItemGroup>
     <Folder Include="Features\CajaManual\" />
     <Folder Include="Features\CancelacionPago\" />
+    <Folder Include="Features\Intradias\Queries\" />
     <Folder Include="Features\SaldoFavor\" />
   </ItemGroup>
 

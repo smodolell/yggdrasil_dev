@@ -17,7 +17,7 @@ public class Catalogos : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         var group = groupBuilder.MapGroup("/")
-            .WithTags("Cobranza - Catalogos");
+            .WithTags("Cobranza");
 
         #region TipoPago
         group.MapGet("tipo-pago/{id}", GetTipoPagoById)

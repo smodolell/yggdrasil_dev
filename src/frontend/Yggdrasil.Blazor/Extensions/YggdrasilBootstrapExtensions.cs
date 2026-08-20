@@ -47,3 +47,37 @@ public static class YggdrasilBootstrapExtensions
 
 
 }
+
+
+public static class YggdrasilBootstrapExtensions2
+{
+    // 1. Registra la infraestructura core de los módulos (Seguridad y Sincronización)
+    public static IServiceCollection RegisterYggdrasilCoreInfrastructure(this IServiceCollection services)
+    {
+        if (services.All(x => x.ServiceType != typeof(SystemSyncService)))
+        {
+            services.AddScoped<SystemSyncService>();
+        }
+
+        // Registro único de handlers si no existen
+        if (services.All(x => x.ServiceType != typeof(YggdrasilHeaderHandler)))
+            services.AddTransient<YggdrasilHeaderHandler>();
+
+        if (services.All(x => x.ServiceType != typeof(ErrorHandlerDelegatingHandler)))
+            services.AddTransient<ErrorHandlerDelegatingHandler>();
+
+        return services;
+    }
+
+    // 2. Registra la infraestructura de un módulo UI concreto
+    public static IServiceCollection RegisterUiModule<TModule>(this IServiceCollection services)
+        where TModule : class, IUiModule
+    {
+        if (!services.Any(x => x.ServiceType == typeof(IUiModule) && x.ImplementationType == typeof(TModule)))
+        {
+            services.AddSingleton<IUiModule, TModule>();
+        }
+
+        return services;
+    }
+}
